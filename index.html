@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobile Game Portal</title>
+<style>
+  :root{--bg:#f3f4f8;--card:#fff;--text:#1d2130;--sub:#6b7085;--line:#e3e5ee;--accent:#4a5cff}
+  @media (prefers-color-scheme: dark){:root{--bg:#14161d;--card:#1f2230;--text:#eceef5;--sub:#9aa0b5;--line:#2e3244;--accent:#8c98ff}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+  header{max-width:1100px;margin:0 auto;padding:40px 16px 8px}
+  h1{margin:0;font-size:28px;letter-spacing:.5px}
+  header p{margin:6px 0 0;color:var(--sub)}
+  main{max-width:1100px;margin:0 auto;padding:24px 16px 48px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.12)}
+  .logo{display:flex;align-items:center;justify-content:center;height:150px;padding:20px;background:#fff;border-bottom:1px solid var(--line);text-decoration:none}
+  .logo img{max-width:100%;max-height:110px;object-fit:contain}
+  .logo .fallback{display:none;font-size:30px;font-weight:800;letter-spacing:2px;color:#fff;text-align:center}
+  .logo.noimg img{display:none}.logo.noimg .fallback{display:block}
+  .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
+  .body h2{margin:0;font-size:18px}
+  .body .desc{margin:0;color:var(--sub);font-size:14px}
+  .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+  .links a{text-decoration:none;font-size:14px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text)}
+  .links a.main{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .links a:hover{filter:brightness(1.1)}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:0 16px 32px}
+  footer a{color:var(--sub)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Mobile Game Portal</h1>
+  <p>手遊角色／道具持有紀錄一覽</p>
+</header>
+<main>
+
+  <section class="card">
+    <a class="logo noimg" style="background:linear-gradient(135deg,#0d1b3d,#2b3f7a)" href="fgo/">
+      <span class="fallback">Fate/Grand Order</span>
+    </a>
+    <div class="body">
+      <h2>Fate/Grand Order（日服）</h2>
+      <p class="desc">從者／禮裝持有紀錄、寶具等級與滿破</p>
+      <div class="links">
+        <a class="main" href="fgo/">收藏管理</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <a class="logo noimg" style="background:linear-gradient(135deg,#1b1435,#4a3b8f)" href="hsr/">
+      <span class="fallback">Honkai: Star Rail</span>
+    </a>
+    <div class="body">
+      <h2>崩壞：星穹鐵道</h2>
+      <p class="desc">角色／光錐持有紀錄、星魂與疊影、簡易組隊</p>
+      <div class="links">
+        <a class="main" href="hsr/">收藏管理</a>
+        <a href="hsr/#team">簡易組隊</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer>卡牌遊戲請見 <a href="https://relax100002000.github.io/deckeditor_portal/">Deck Builder Portal</a>。著作權屬各權利人所有。</footer>
+</body>
+</html>
