@@ -290,7 +290,7 @@ function filtered(){
 function cardHTML(x){
   const v = owned.stu[x.id] || 0;
   return `<div class="item${v ? ' own' : ''}${v === 9 ? ' np5' : ''}" data-id="${x.id}">
-    <div class="img"><img loading="lazy" src="${faceOf(x)}" alt=""><span class="rar">${x.squad === 'Main' ? 'ST' : 'SP'}</span>
+    <div class="img"><img loading="lazy" src="${faceOf(x)}" data-big="${DB}images/student/portrait/${x.id}.webp" alt=""><span class="rar">${x.squad === 'Main' ? 'ST' : 'SP'}</span>
       <span class="tags">${bt(x.bullet)}${ar(x.armor)}</span><span class="chk">✓</span></div>
     <div class="nm" title="${esc(x.name)}">${esc(x.name)}</div>
     <div class="cls">${esc(L.TacticRole[x.role] || x.role)}・${esc(x.wt)}</div>
@@ -497,5 +497,6 @@ document.getElementById('fileImport').addEventListener('change', async ev => {
 </script>
 <script src="team.js"></script>
 <script>TEAM.init(); init();</script>
+<script src="../hover.js"></script>
 </body>
 </html>

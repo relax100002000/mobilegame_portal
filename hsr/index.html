@@ -293,7 +293,7 @@ function lvBtns(t, v, full){
 function cardHTML(x){
   const v = owned[tab][x.id] || 0, mx = maxVal();
   return `<div class="item${v ? ' own' : ''}${v === mx ? ' np5' : ''}" data-id="${x.id}">
-    <div class="img"><img loading="lazy" src="${faceOf(tab, x)}" alt=""><span class="rar">★${x.r}</span>
+    <div class="img"><img loading="lazy" src="${faceOf(tab, x)}" data-big="${ASSET}${tab === 'chr' ? 'avatar' : 'equipment'}/large/${x.icon}.png" alt=""><span class="rar">★${x.r}</span>
       ${tab === 'chr' ? `<span class="elm">${elemDot(x.e)}</span>` : ''}<span class="chk">✓</span></div>
     <div class="nm" title="${esc(x.name)}">${esc(x.name)}</div>
     <div class="cls">${PATH[x.p] || x.p}${tab === 'chr' ? '・' + ELEM[x.e] : ''}</div>
@@ -562,5 +562,6 @@ document.getElementById('fileImport').addEventListener('change', async ev => {
 </script>
 <script src="team.js"></script>
 <script>TEAM.init(); init(); if (location.hash === '#team') document.querySelector('.tab[data-tab="team"]').click();</script>
+<script src="../hover.js"></script>
 </body>
 </html>

@@ -289,7 +289,7 @@ function ctlHTML(x, v, attr){
 function cardHTML(x){
   const v = O(x.id), [np, tg] = ctlHTML(x, v, 'data');
   return `<div class="item${v ? ' own' : ''}${v && v.b === 3 ? ' np5' : ''}" data-id="${x.id}">
-    <div class="img"><img loading="lazy" src="${faceOf(x, v && v.r)}" alt="" onerror="this.style.visibility='hidden'"><span class="no">No.${x.code}</span><span class="rar r${x.r}">${rarName(x)}</span><span class="chk">✓</span></div>
+    <div class="img"><img loading="lazy" src="${faceOf(x, v && v.r)}" data-big="${IMG}${(v && v.r && x.rs) || x.skin}/painting.png" alt="" onerror="this.style.visibility='hidden'"><span class="no">No.${x.code}</span><span class="rar r${x.r}">${rarName(x)}</span><span class="chk">✓</span></div>
     <div class="nm" title="${esc(x.name)}">${esc(x.name)}</div>
     <div class="cls">${esc(typeName(x.t))}・${esc(natName(x.n))}</div>
     <div class="np">${np}</div><div class="tg">${tg}</div></div>`;
@@ -475,5 +475,6 @@ document.getElementById('fileImport').addEventListener('change', async ev => {
 </script>
 <script src="team.js"></script>
 <script>TEAM.init(); init();</script>
+<script src="../hover.js"></script>
 </body>
 </html>

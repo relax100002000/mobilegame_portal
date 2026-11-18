@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLOWER KNIGHT GIRL 收藏管理</title>
+<style>
+  :root{--bg:#f3f4f8;--card:#fff;--text:#1d2130;--sub:#6b7085;--line:#e3e5ee;--accent:#4a5cff;--ok:#1f9d55;--gold:#d4a017}
+  @media (prefers-color-scheme: dark){:root{--bg:#14161d;--card:#1f2230;--text:#eceef5;--sub:#9aa0b5;--line:#2e3244;--accent:#8c98ff;--ok:#3ccf7a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+  .wrap{max-width:1300px;margin:0 auto;padding:10px 14px}
+  .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .top h1{margin:0;font-size:20px}
+  .top a.back{color:var(--sub);text-decoration:none;font-size:14px}
+  .top .sp{flex:1}
+  button,select,input{font:inherit;color:var(--text)}
+  .btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+  .btn:hover{border-color:var(--accent)}
+  .tabs{display:flex;gap:6px;margin-top:10px}
+  .tab{padding:7px 16px;border-radius:8px 8px 0 0;border:1px solid var(--line);border-bottom:none;background:var(--card);cursor:pointer;font-weight:600;color:var(--sub)}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+  .filters input[type=search]{flex:1;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .filters select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .chip{padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer;font-size:12px;user-select:none}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stats{margin-top:8px;font-size:13px;color:var(--sub);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .stats b{color:var(--text)}
+  main{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .item{position:relative;background:var(--card);border:2px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;user-select:none}
+  .item .img{position:relative;aspect-ratio:1/1;background:#0002}
+  .item img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1);opacity:.45;transition:.15s}
+  .item.own{border-color:var(--ok)}
+  .item.own img{filter:none;opacity:1}
+  .item .no{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .rar{position:absolute;right:4px;top:4px;background:#000a;color:var(--gold);font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .chk{position:absolute;right:4px;bottom:4px;width:24px;height:24px;border-radius:50%;background:#fffc;border:2px solid #888;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:transparent}
+  .item.own .chk{background:var(--ok);border-color:#fff;color:#fff}
+  .item .nm{font-size:12px;line-height:1.3;padding:4px 5px 2px;height:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .item .cls{font-size:11px;color:var(--sub);padding:0 5px}
+  .np{display:flex;gap:2px;padding:4px 4px 5px;visibility:hidden}
+  .item.own .np{visibility:visible}
+  .np span{flex:1;text-align:center;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:2px 0;color:var(--sub)}
+  .np span.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  .np span.mlb{flex:1}
+  .item.np5 .np span.on{background:var(--gold);border-color:var(--gold)}
+  main[hidden],#teamOut[hidden]{display:none}
+  .filters label{font-size:13px;color:var(--sub);display:flex;align-items:center;gap:5px}
+  #teamOut{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+  .tm-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .tm-head{font-size:13px;display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .tm-b{font-size:12px;padding:2px 8px;border-radius:6px;color:#fff;font-weight:600}
+  .tm-b.ok{background:var(--ok)}.tm-b.mid{background:#d08a00}.tm-b.ng{background:#c33}
+  .tm-mems{display:flex;gap:8px}
+  .tm-mem{width:84px;cursor:pointer;text-align:center}
+  .tm-mem img{width:72px;height:72px;border-radius:8px;display:block;margin:0 auto}
+  .tm-tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-top:3px;color:#fff;background:#888}
+  .tm-tag.t-dps{background:#c33}.tm-tag.t-own{background:var(--accent)}.tm-tag.t-friend{background:#d08a00}
+  .tm-nm{font-size:11px;line-height:1.25;margin-top:2px;max-height:2.5em;overflow:hidden}
+  table.tm-w{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  table.tm-w th,table.tm-w td{border-top:1px solid var(--line);padding:3px 4px;text-align:left;white-space:nowrap}
+  table.tm-w th{color:var(--sub);font-weight:400}
+  table.tm-w td.tm-plan{white-space:normal;color:var(--sub)}
+  .tm-ok{color:var(--ok);font-weight:700}.tm-ng{color:#c33;font-weight:700}
+  @media (max-width:600px){#teamOut{grid-template-columns:1fr;padding:8px}}
+  .msg{grid-column:1/-1;text-align:center;color:var(--sub);padding:40px 0}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:0 16px 30px}
+  footer a{color:var(--sub)}
+  .item .chk{width:30px;height:30px;right:3px;bottom:3px;font-size:17px}
+  .item .chk:hover{border-color:var(--ok)}
+  /* detail modal */
+  #dlg{position:fixed;inset:0;z-index:20;background:#000a;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 10px}
+  #dlg.on{display:flex}
+  body.lock{overflow:hidden}
+  .dbox{position:relative;background:var(--card);border-radius:14px;max-width:880px;width:100%;padding:18px 20px 22px;box-shadow:0 20px 50px #0008}
+  .dclose{position:absolute;right:10px;top:8px;border:none;background:none;font-size:28px;cursor:pointer;color:var(--sub);line-height:1}
+  .dhead{display:flex;gap:14px;align-items:center;padding-right:30px}
+  .dhead img{width:72px;height:72px;border-radius:8px}
+  .dhead h2{margin:0;font-size:20px}
+  .dhead .ruby{color:var(--sub);font-size:12px}
+  .dhead .meta{color:var(--sub);font-size:13px;margin-top:2px}
+  .down{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 4px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+  .down .np{visibility:visible;padding:0;gap:4px}
+  .down .np span{cursor:pointer;padding:4px 10px;font-size:13px}
+  .dcols{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px;margin-top:12px}
+  .dart img{width:100%;border-radius:8px;display:block;background:#0002;min-height:200px}
+  .dart .asc{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .dart .asc span{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+  .dart .asc span.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dbox h3{font-size:15px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .dcols h3:first-child{margin-top:0}
+  table.kv{border-collapse:collapse;font-size:13px;width:100%}
+  table.kv th,table.kv td{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+  table.kv th{background:#8881;white-space:nowrap;font-weight:600;width:1%}
+  .sk{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .sk:last-child{border-bottom:none}
+  .sk img{width:40px;height:40px;flex:none}
+  .sk .t{font-weight:600;font-size:14px}
+  .sk .t small{font-weight:400;color:var(--sub);margin-left:6px}
+  .sk .d{font-size:13px;margin-top:3px;white-space:pre-wrap}
+  .vals{font-size:12px;color:var(--sub);margin-top:4px;overflow-x:auto}
+  .vals table{border-collapse:collapse}
+  .vals td{border:1px solid var(--line);padding:1px 5px;white-space:nowrap}
+  .vals td:first-child{color:var(--text)}
+  .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;background:var(--accent);color:#fff;margin-left:6px;vertical-align:middle}
+  .card-q{color:#2a7de1;font-weight:700}.card-a{color:#1f9d55;font-weight:700}.card-b{color:#d33;font-weight:700}
+  .prof{font-size:13px;white-space:pre-wrap;line-height:1.6;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .prof .cond{display:block;color:var(--sub);font-size:12px}
+  details.older{margin:2px 0 6px 50px;font-size:13px}
+  details.older summary{cursor:pointer;color:var(--sub);font-size:12px}
+  details.older .sk{opacity:.8}
+  .dlink{color:var(--accent);cursor:pointer;text-decoration:underline}
+  .dfoot{margin-top:14px;font-size:12px;color:var(--sub)}
+  .dfoot a{color:var(--sub)}
+  @media (max-width:700px){.dcols{grid-template-columns:1fr}.dart{max-width:320px;margin:0 auto}#dlg{padding:0}.dbox{border-radius:0;min-height:100%}}
+  @media (max-width:600px){header{position:static}main{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}.item .nm{font-size:11px}}
+</style>
+<style>
+  .item .np span{font-size:11px}
+  .ty{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;line-height:15px;color:#222}
+  .ty1{background:#F09898}.ty2{background:#80AFFF}.ty3{background:#FFD571}.ty4{background:#D69BFF}.ty5{background:#ccc}.ty100{background:#FFC0CB}
+  .item .tags{position:absolute;left:3px;bottom:3px}
+  .r6{color:#ff8fd0!important}
+  .wk{font-size:13px;line-height:1.5}
+  .wk table{border-collapse:collapse;width:100%;margin:6px 0;font-size:12.5px}
+  .wk th,.wk td{border:1px solid var(--line);padding:3px 6px;vertical-align:top}
+  .wk th{background:#8881}
+  .wk img{max-height:24px;vertical-align:middle}
+  .dart .asc{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .dart .asc span{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+  .dart .asc span.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .tm-mem{width:96px}
+  .tm-sec{font-size:13px;font-weight:700;margin:10px 0 4px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top">
+    <a class="back" href="../">← Portal</a>
+    <h1>FLOWER KNIGHT GIRL 收藏管理（X指定版）</h1>
+    <span class="sp"></span>
+    <button class="btn" id="btnExport">匯出</button>
+    <button class="btn" id="btnImport">匯入</button>
+    <button class="btn" id="btnRefresh">更新資料</button>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-tab="knight">花騎士</div>
+    <div class="tab" data-tab="team">簡易編隊</div>
+  </div>
+  <div id="listCtl">
+    <div class="filters">
+      <input type="search" id="q" placeholder="名前で検索">
+      <select id="fOwn">
+        <option value="all">全部</option>
+        <option value="own">持有</option>
+        <option value="not">未持有</option>
+        <option value="max">已到最高階段</option>
+        <option value="notmax">持有但可再成長</option>
+      </select>
+      <select id="fSort">
+        <option value="new">實裝 新→舊</option>
+        <option value="old">實裝 舊→新</option>
+        <option value="rar">稀有度 ↓</option>
+        <option value="name">名前順</option>
+      </select>
+      <label style="font-size:13px;color:var(--sub)"><input type="checkbox" id="fVar" checked> 顯示特別版（4コマ劇場・衣裝等）</label>
+    </div>
+    <div class="chips" id="chipRar"></div>
+    <div class="chips" id="chipType"></div>
+    <div class="chips" id="chipNat"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div id="teamCtl" hidden>
+    <div class="filters">
+      <label>敵の弱点 <select id="tmType"><option value="">不指定</option><option value="1">斬</option><option value="2">打</option><option value="3">突</option><option value="4">魔</option></select></label>
+      <label>顯示國家編隊 <select id="tmNat"><option value="1" selected>顯示</option><option value="0">不顯示</option></select></label>
+    </div>
+    <div class="stats" id="teamInfo"></div>
+  </div>
+</div></header>
+<main id="grid"><div class="msg">讀取資料中…</div></main>
+<section id="teamOut" hidden></section>
+<div id="dlg"><div class="dbox"><button class="dclose" title="關閉">×</button><div id="dbody"></div></div></div>
+<footer>資料與圖片來自 <a href="https://flowerknight.fandom.com/" target="_blank" rel="noopener">Flower Knight Girl Wikia</a>（遊戲主資料，CC BY-SA），著作權屬 DMM GAMES 所有。只收一般立繪與資料。點圖片看詳細資料，點右下圓圈打勾持有，下方選成長階段。持有紀錄存在此瀏覽器，換裝置請用「匯出／匯入」。</footer>
+
+<script>
+const API = 'https://flowerknight.fandom.com/api.php?format=json&origin=*&';
+const SAVE_KEY = 'fkg_owned_v1';
+const CACHE_KEY = 'fkg_data_v1';
+const TYPE = {1:'斬', 2:'打', 3:'突', 4:'魔', 5:'汎用', 100:'夢'};
+const NATION = {1:'ウィンターローズ', 2:'バナナオーシャン', 3:'ブロッサムヒル', 4:'ベルガモットバレー', 5:'リリィウッド', 6:'ザハラ・アル・アマル', 7:'ロータスレイク', 8:'異世界', 9:'スプリングガーデン', 0:'その他'};
+const STAGE = {1:'未進化', 2:'進化', 3:'開花', 4:'昇華'};
+const STAGE_S = {1:'未', 2:'進', 3:'開', 4:'昇'};
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---- MD5（Fandom 圖片路徑 /images/a/ab/檔名 用） ---- */
+function md5(str){
+  function rh(n){ let s = ''; for (let j = 0; j <= 3; j++) s += ((n >> (j * 8 + 4)) & 15).toString(16) + ((n >> (j * 8)) & 15).toString(16); return s; }
+  function ad(x, y){ const l = (x & 0xFFFF) + (y & 0xFFFF); return (((x >> 16) + (y >> 16) + (l >> 16)) << 16) | (l & 0xFFFF); }
+  function rl(n, c){ return (n << c) | (n >>> (32 - c)); }
+  function cm(q, a, b, x, s, t){ return ad(rl(ad(ad(a, q), ad(x, t)), s), b); }
+  function ff(a, b, c, d, x, s, t){ return cm((b & c) | (~b & d), a, b, x, s, t); }
+  function gg(a, b, c, d, x, s, t){ return cm((b & d) | (c & ~d), a, b, x, s, t); }
+  function hh(a, b, c, d, x, s, t){ return cm(b ^ c ^ d, a, b, x, s, t); }
+  function ii(a, b, c, d, x, s, t){ return cm(c ^ (b | ~d), a, b, x, s, t); }
+  const n = ((str.length + 8) >> 6) + 1, x = new Array(n * 16).fill(0);
+  for (let i = 0; i < str.length; i++) x[i >> 2] |= str.charCodeAt(i) << ((i % 4) * 8);
+  x[str.length >> 2] |= 0x80 << ((str.length % 4) * 8); x[n * 16 - 2] = str.length * 8;
+  let a = 1732584193, b = -271733879, c = -1732584194, d = 271733878;
+  for (let i = 0; i < x.length; i += 16){
+    const oa = a, ob = b, oc = c, od = d;
+    a=ff(a,b,c,d,x[i],7,-680876936);d=ff(d,a,b,c,x[i+1],12,-389564586);c=ff(c,d,a,b,x[i+2],17,606105819);b=ff(b,c,d,a,x[i+3],22,-1044525330);
+    a=ff(a,b,c,d,x[i+4],7,-176418897);d=ff(d,a,b,c,x[i+5],12,1200080426);c=ff(c,d,a,b,x[i+6],17,-1473231341);b=ff(b,c,d,a,x[i+7],22,-45705983);
+    a=ff(a,b,c,d,x[i+8],7,1770035416);d=ff(d,a,b,c,x[i+9],12,-1958414417);c=ff(c,d,a,b,x[i+10],17,-42063);b=ff(b,c,d,a,x[i+11],22,-1990404162);
+    a=ff(a,b,c,d,x[i+12],7,1804603682);d=ff(d,a,b,c,x[i+13],12,-40341101);c=ff(c,d,a,b,x[i+14],17,-1502002290);b=ff(b,c,d,a,x[i+15],22,1236535329);
+    a=gg(a,b,c,d,x[i+1],5,-165796510);d=gg(d,a,b,c,x[i+6],9,-1069501632);c=gg(c,d,a,b,x[i+11],14,643717713);b=gg(b,c,d,a,x[i],20,-373897302);
+    a=gg(a,b,c,d,x[i+5],5,-701558691);d=gg(d,a,b,c,x[i+10],9,38016083);c=gg(c,d,a,b,x[i+15],14,-660478335);b=gg(b,c,d,a,x[i+4],20,-405537848);
+    a=gg(a,b,c,d,x[i+9],5,568446438);d=gg(d,a,b,c,x[i+14],9,-1019803690);c=gg(c,d,a,b,x[i+3],14,-187363961);b=gg(b,c,d,a,x[i+8],20,1163531501);
+    a=gg(a,b,c,d,x[i+13],5,-1444681467);d=gg(d,a,b,c,x[i+2],9,-51403784);c=gg(c,d,a,b,x[i+7],14,1735328473);b=gg(b,c,d,a,x[i+12],20,-1926607734);
+    a=hh(a,b,c,d,x[i+5],4,-378558);d=hh(d,a,b,c,x[i+8],11,-2022574463);c=hh(c,d,a,b,x[i+11],16,1839030562);b=hh(b,c,d,a,x[i+14],23,-35309556);
+    a=hh(a,b,c,d,x[i+1],4,-1530992060);d=hh(d,a,b,c,x[i+4],11,1272893353);c=hh(c,d,a,b,x[i+7],16,-155497632);b=hh(b,c,d,a,x[i+10],23,-1094730640);
+    a=hh(a,b,c,d,x[i+13],4,681279174);d=hh(d,a,b,c,x[i],11,-358537222);c=hh(c,d,a,b,x[i+3],16,-722521979);b=hh(b,c,d,a,x[i+6],23,76029189);
+    a=hh(a,b,c,d,x[i+9],4,-640364487);d=hh(d,a,b,c,x[i+12],11,-421815835);c=hh(c,d,a,b,x[i+15],16,530742520);b=hh(b,c,d,a,x[i+2],23,-995338651);
+    a=ii(a,b,c,d,x[i],6,-198630844);d=ii(d,a,b,c,x[i+7],10,1126891415);c=ii(c,d,a,b,x[i+14],15,-1416354905);b=ii(b,c,d,a,x[i+5],21,-57434055);
+    a=ii(a,b,c,d,x[i+12],6,1700485571);d=ii(d,a,b,c,x[i+3],10,-1894986606);c=ii(c,d,a,b,x[i+10],15,-1051523);b=ii(b,c,d,a,x[i+1],21,-2054922799);
+    a=ii(a,b,c,d,x[i+8],6,1873313359);d=ii(d,a,b,c,x[i+15],10,-30611744);c=ii(c,d,a,b,x[i+6],15,-1560198380);b=ii(b,c,d,a,x[i+13],21,1309151649);
+    a=ii(a,b,c,d,x[i+4],6,-145523070);d=ii(d,a,b,c,x[i+11],10,-1120210379);c=ii(c,d,a,b,x[i+2],15,718787259);b=ii(b,c,d,a,x[i+9],21,-343485551);
+    a = ad(a, oa); b = ad(b, ob); c = ad(c, oc); d = ad(d, od);
+  }
+  return rh(a) + rh(b) + rh(c) + rh(d);
+}
+function wikiImg(file){ const h = md5(file); return `https://static.wikia.nocookie.net/flowerknight/images/${h[0]}/${h.slice(0, 2)}/${file}`; }
+function stageId(x, s){ return s === 2 ? x.id + 1 : s === 3 ? (x.pob ? x.id + 1 : x.id + 300000) : s === 4 ? x.id + 300001 : x.id; }
+function iconUrl(x, s){ return wikiImg(`Icon_${stageId(x, s || 1)}.png`); }
+function portraitUrl(x, s){ return wikiImg(`Portrait_${stageId(x, s || 1)}.png`); }
+
+/* ---- Lua table → JS ---- */
+function luaParse(src){
+  src = src.replace(/--\[\[[\s\S]*?\]\]/g, '').replace(/--[^\n]*/g, '');
+  const m = src.match(/return\s*/); let i = m ? m.index + m[0].length : 0;
+  const ws = () => { while (i < src.length && /\s/.test(src[i])) i++; };
+  function val(){
+    ws(); const c = src[i];
+    if (c === '{') return table();
+    if (c === '"' || c === "'"){ const q = c; let s = ''; i++; while (src[i] !== q){ if (src[i] === '\\'){ i++; s += src[i] === 'n' ? '\n' : src[i]; } else s += src[i]; i++; } i++; return s; }
+    const mm = /^(-?\d+(\.\d+)?(e-?\d+)?|true|false|nil)/.exec(src.slice(i, i + 40));
+    if (mm){ i += mm[0].length; const t = mm[0]; return t === 'true' ? true : t === 'false' ? false : t === 'nil' ? null : Number(t); }
+    throw new Error('Lua 解析失敗 @' + i);
+  }
+  function table(){
+    i++; const arr = [], obj = {}; let isObj = false;
+    while (true){
+      ws(); if (src[i] === '}'){ i++; break; }
+      let key = null;
+      if (src[i] === '['){ i++; key = val(); ws(); i++; ws(); i++; }
+      else { const km = /^([A-Za-z_][A-Za-z0-9_]*)\s*=(?!=)/.exec(src.slice(i, i + 80)); if (km){ key = km[1]; i += km[0].length; } }
+      const v = val();
+      if (key !== null){ obj[key] = v; isObj = true; } else arr.push(v);
+      ws(); if (src[i] === ',' || src[i] === ';') i++;
+    }
+    if (isObj){ arr.forEach((v, k) => obj[k + 1] = v); return obj; }
+    return arr;
+  }
+  return val();
+}
+
+let data = null;   // {list:[], time}
+let owned = {k:{}};   // id: stage 1..4
+try{ const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (o && o.k) owned = o; }catch(e){}
+const F = {r:new Set(), t:new Set(), n:new Set()};
+function saveOwned(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(owned)); }catch(e){ alert('儲存失敗：' + e.message); } }
+
+async function fetchData(){
+  const r = await fetch(API + 'action=query&prop=revisions&rvprop=content&rvslots=main&titles=Module:MasterCharacterData', {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  const M = luaParse(Object.values(r.query.pages)[0].revisions[0].slots.main['*']);
+  const list = Object.values(M).map(v => {
+    const st = {};
+    for (const t of [1, 2, 3, 4]) if (v['tier' + t + 'LvMax']) st[t] = [v['tier' + t + 'Lv1'], v['tier' + t + 'LvMax'], v['tier' + t + 'Aff1Bonus'], v['tier' + t + 'Aff2Bonus']];
+    return {id:v.id, name:v.name, reading:v.reading, r:v.rarity, t:v.type, n:v.nation, ev:v.isEvent, pob:v.tier3PowersOnlyBloom === 1, date:(v.dateAdded || '').slice(0, 10), spd:v.speed, st, sp:String(v.id).length > 6};
+  });
+  const d = {list, time:Date.now()};
+  try{ localStorage.setItem(CACHE_KEY, JSON.stringify(d)); }catch(e){}
+  return d;
+}
+async function init(){
+  try{ data = JSON.parse(localStorage.getItem(CACHE_KEY)); }catch(e){ data = null; }
+  if (data){ buildChips(); render(); }
+  if (!data || Date.now() - data.time > 86400000){
+    try{
+      const fresh = await fetchData();
+      const changed = !data || fresh.list.length !== data.list.length;
+      data = fresh;
+      if (changed){ buildChips(); render(); }
+    }catch(err){
+      if (!data) document.getElementById('grid').innerHTML = '<div class="msg">資料讀取失敗：' + esc(err.message) + '<br>請確認網路後按「更新資料」。</div>';
+    }
+  }
+  if (!curDetail) routeHash();
+  if (location.hash === '#team') document.querySelector('.tab[data-tab="team"]').click();
+}
+
+function maxStage(x){ return Math.max(...Object.keys(x.st).map(Number)); }
+function buildChips(){
+  const L = data.list;
+  const mk = (id, k, vals, lab) => document.getElementById(id).innerHTML = vals.map(v => `<span class="chip${F[k].has(v) ? ' on' : ''}" data-k="${k}" data-v="${v}">${lab(v)}</span>`).join('');
+  mk('chipRar', 'r', [...new Set(L.map(x => x.r))].sort((a, b) => b - a), v => '★' + v);
+  mk('chipType', 't', [1, 2, 3, 4, 100, 5].filter(t => L.some(x => x.t === t)), v => `<span class="ty ty${v}">${TYPE[v]}</span>`);
+  mk('chipNat', 'n', [1, 2, 3, 4, 5, 7, 6, 9, 8, 0].filter(n => L.some(x => x.n === n)), v => esc(NATION[v]));
+}
+function filtered(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const fo = document.getElementById('fOwn').value, so = document.getElementById('fSort').value, sv = document.getElementById('fVar').checked;
+  const list = data.list.filter(x => {
+    if (!sv && x.sp) return false;
+    if (F.r.size && !F.r.has(x.r)) return false;
+    if (F.t.size && !F.t.has(x.t)) return false;
+    if (F.n.size && !F.n.has(x.n)) return false;
+    if (q && !(x.name.toLowerCase().includes(q) || (x.reading || '').toLowerCase().includes(q))) return false;
+    const v = owned.k[x.id] || 0;
+    if (fo === 'own' && !v) return false;
+    if (fo === 'not' && v) return false;
+    if (fo === 'max' && !(v && v >= maxStage(x))) return false;
+    if (fo === 'notmax' && !(v && v < maxStage(x))) return false;
+    return true;
+  });
+  if (so === 'old') list.sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
+  else if (so === 'rar') list.sort((a, b) => b.r - a.r || b.date.localeCompare(a.date));
+  else if (so === 'name') list.sort((a, b) => (a.reading || a.name).localeCompare(b.reading || b.name, 'ja'));
+  else list.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+  return list;
+}
+function stageBtns(x, v, attr, full){
+  return Object.keys(x.st).map(Number).map(s => `<span ${attr}="${s}" class="${v === s ? 'on' : ''}" title="${STAGE[s]}">${full ? STAGE[s] : STAGE_S[s]}</span>`).join('');
+}
+function cardHTML(x){
+  const v = owned.k[x.id] || 0;
+  return `<div class="item${v ? ' own' : ''}${v && v >= maxStage(x) ? ' np5' : ''}" data-id="${x.id}">
+    <div class="img"><img loading="lazy" src="${iconUrl(x, v || 1)}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${iconUrl(x, 1)}'}" alt="">
+      <span class="rar${x.r === 6 ? ' r6' : ''}">★${x.r}</span><span class="tags"><span class="ty ty${x.t}">${TYPE[x.t] || '?'}</span></span><span class="chk">✓</span></div>
+    <div class="nm" title="${esc(x.name)}">${esc(x.name)}</div>
+    <div class="cls">${esc(NATION[x.n] || '')}</div>
+    <div class="np" title="成長階段">${stageBtns(x, v, 'data-np')}</div></div>`;
+}
+function render(){
+  if (!data) return;
+  const list = filtered();
+  const g = document.getElementById('grid');
+  g.innerHTML = list.length ? list.slice(0, 500).map(cardHTML).join('') : '<div class="msg">沒有符合的項目</div>';
+  if (list.length > 500) g.insertAdjacentHTML('beforeend', `<div class="msg">只顯示前 500 筆（共 ${list.length} 筆），請用篩選縮小範圍。</div>`);
+  renderStats(list.length);
+}
+function renderStats(shown){
+  const L = data.list.filter(x => !x.sp), own = L.filter(x => owned.k[x.id]);
+  let h = `<span>持有 <b>${own.length}</b> / ${L.length}（${(own.length / L.length * 100).toFixed(1)}%，不含特別版）</span>`;
+  h += [6, 5].map(r => `<span>★${r} <b>${own.filter(x => x.r === r).length}</b>/${L.filter(x => x.r === r).length}</span>`).join('');
+  h += `<span>開花以上 <b>${own.filter(x => owned.k[x.id] >= 3).length}</b></span><span>顯示中 ${shown}</span>`;
+  if (data.time) h += `<span>資料：${new Date(data.time).toLocaleString()}</span>`;
+  document.getElementById('stats').innerHTML = h;
+}
+function setOwn(id, v){
+  if (v) owned.k[id] = v; else delete owned.k[id];
+  saveOwned();
+  const el = document.querySelector(`#grid .item[data-id="${id}"]`);
+  if (el){ const tmp = document.createElement('div'); tmp.innerHTML = cardHTML(data.list.find(x => x.id === id)); el.replaceWith(tmp.firstElementChild); }
+  renderStats(document.querySelectorAll('#grid .item').length);
+}
+document.getElementById('grid').addEventListener('click', ev => {
+  const el = ev.target.closest('.item'); if (!el) return;
+  const id = +el.dataset.id, np = ev.target.closest('[data-np]');
+  if (np) setOwn(id, +np.dataset.np);
+  else if (ev.target.closest('.chk')) setOwn(id, owned.k[id] ? 0 : 1);
+  else { pushedHash = true; location.hash = 'k-' + id; }
+});
+
+/* ===== 詳細資料 ===== */
+const wikiCache = {};
+let curDetail = null, pushedHash = false;
+function ownBarHTML(x){
+  const v = owned.k[x.id] || 0;
+  let h = `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600"><input type="checkbox" id="downChk" ${v ? 'checked' : ''}> 持有</label>`;
+  if (v) h += `<div class="np">${stageBtns(x, v, 'data-dnp', true)}</div>`;
+  return h;
+}
+function headHTML(x){
+  return `<div class="dhead"><img src="${iconUrl(x, owned.k[x.id] || 1)}" alt=""><div>
+    <div class="ruby">${esc(x.reading || '')}</div><h2>${esc(x.name)}</h2>
+    <div class="meta">★${x.r}｜<span class="ty ty${x.t}">${TYPE[x.t] || '?'}</span>｜${esc(NATION[x.n] || '')}${x.date ? '｜實裝 ' + esc(x.date) : ''}${x.ev ? '｜活動／特典' : ''}</div></div></div>
+    <div class="down" id="down">${ownBarHTML(x)}</div>`;
+}
+const fmt = n => n == null ? '-' : Number(n).toLocaleString();
+function sanitizeWiki(html){
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script,style,.mw-editsection,noscript').forEach(e => e.remove());
+  doc.querySelectorAll('img').forEach(img => { const s = img.getAttribute('data-src') || img.getAttribute('src'); img.setAttribute('src', s || ''); img.removeAttribute('srcset'); img.removeAttribute('data-src'); img.setAttribute('loading', 'lazy'); });
+  doc.querySelectorAll('a').forEach(a => { const s = document.createElement('span'); s.innerHTML = a.innerHTML; a.replaceWith(s); });
+  doc.querySelectorAll('[style]').forEach(e => { if (/display:\s*none/.test(e.getAttribute('style'))) e.removeAttribute('style'); else e.removeAttribute('style'); });
+  const tables = [...doc.querySelectorAll('table')];
+  // 立繪表（第一張）與能力值表（我們自己算）不要
+  return tables.filter(t => !/Pre-Evolved\s*Evolved/.test(t.textContent.replace(/\s+/g, ' ').slice(0, 120)) && !/Type\s*Stats/.test(t.textContent.slice(0, 60))).map(t => t.outerHTML).join('');
+}
+function detailHTML(x){
+  const stages = Object.keys(x.st).map(Number);
+  const v = owned.k[x.id] || stages[stages.length - 1];
+  let h = `<div class="dcols"><div class="dart"><img id="dimg" src="${portraitUrl(x, v)}" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${portraitUrl(x, 1)}'}" alt="">
+    <div class="asc">${stages.map(s => `<span data-st="${s}" class="${s === v ? 'on' : ''}">${STAGE[s]}${s === 3 && x.pob ? '（能力）' : ''}</span>`).join('')}</div></div><div>
+    <h3>能力值（HP／攻撃／防御，好感度 0%）</h3><table class="kv"><tr><th>階段</th><th>Lv.1</th><th>最大 Lv</th><th>好感度加成 MAX</th></tr>` +
+    stages.map(s => { const [a, b, c, d] = x.st[s]; const sum = c && d ? c.map((n, i) => n + d[i]) : c; return `<tr><th>${STAGE[s]}</th><td>${(a || []).map(fmt).join(' / ')}</td><td>${(b || []).map(fmt).join(' / ')}</td><td>${(sum || []).map(n => '+' + fmt(n)).join(' / ')}</td></tr>`; }).join('') +
+    `</table><table class="kv" style="margin-top:6px"><tr><th>移動速度</th><td>${fmt(x.spd)}</td></tr><tr><th>ID</th><td>${x.id}</td></tr></table></div></div>
+    <h3>スキル・アビリティ（Wikia 英文說明）</h3><div class="wk" id="wk"><p style="color:var(--sub)">讀取中…</p></div>
+    <div class="dfoot">資料來源：<a href="https://flowerknight.fandom.com/wiki/Special:Search?search=${encodeURIComponent(x.name)}" target="_blank" rel="noopener">Flower Knight Girl Wikia</a></div>`;
+  return h;
+}
+async function loadWiki(x){
+  const box = document.getElementById('wk');
+  try{
+    if (!wikiCache[x.id]){
+      const r = await fetch(API + 'action=parse&contentmodel=wikitext&disablelimitreport=1&prop=text&text=' + encodeURIComponent(`{{CharacterStat|JP=${x.name}}}`)).then(r => r.json());
+      wikiCache[x.id] = r.parse ? sanitizeWiki(r.parse.text['*']) : '';
+    }
+    if (curDetail && curDetail.id === x.id) box.innerHTML = wikiCache[x.id] || '<p style="color:var(--sub)">Wikia 沒有這個角色的說明卡。</p>';
+  }catch(err){ if (curDetail && curDetail.id === x.id) box.innerHTML = `<p>讀取失敗：${esc(err.message)}</p>`; }
+}
+function openDetail(id){
+  const x = data && data.list.find(s => s.id === id);
+  if (!x){ closeDetail(); return; }
+  curDetail = {id};
+  document.getElementById('dlg').classList.add('on');
+  document.body.classList.add('lock');
+  document.getElementById('dbody').innerHTML = headHTML(x) + detailHTML(x);
+  document.getElementById('dlg').scrollTop = 0;
+  loadWiki(x);
+}
+function closeDetail(){ curDetail = null; document.getElementById('dlg').classList.remove('on'); document.body.classList.remove('lock'); }
+function hideDetail(){
+  if (pushedHash){ pushedHash = false; history.back(); }
+  else { history.replaceState(null, '', location.pathname + location.search); closeDetail(); }
+}
+function routeHash(){
+  const m = location.hash.match(/^#k-(\d+)$/);
+  if (m && data) openDetail(+m[1]); else closeDetail();
+}
+window.addEventListener('hashchange', routeHash);
+document.querySelector('.dclose').addEventListener('click', hideDetail);
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && curDetail) hideDetail(); });
+document.getElementById('dlg').addEventListener('click', ev => {
+  if (ev.target.id === 'dlg'){ hideDetail(); return; }
+  const x = curDetail && data.list.find(s => s.id === curDetail.id);
+  const st = ev.target.closest('.asc span');
+  if (st && x){
+    const img = document.getElementById('dimg'); img.dataset.f = ''; img.src = portraitUrl(x, +st.dataset.st);
+    st.parentNode.querySelectorAll('span').forEach(s => s.classList.toggle('on', s === st));
+    return;
+  }
+  const np = ev.target.closest('[data-dnp]');
+  if (np && x){ setOwn(x.id, +np.dataset.dnp); document.getElementById('down').innerHTML = ownBarHTML(x); }
+});
+document.getElementById('dlg').addEventListener('change', ev => {
+  if (ev.target.id === 'downChk' && curDetail){ const x = data.list.find(s => s.id === curDetail.id); setOwn(x.id, ev.target.checked ? 1 : 0); document.getElementById('down').innerHTML = ownBarHTML(x); }
+});
+
+/* ===== 分頁、篩選、匯出入 ===== */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  const isTeam = t.dataset.tab === 'team';
+  document.getElementById('listCtl').hidden = isTeam;
+  document.getElementById('grid').hidden = isTeam;
+  document.getElementById('teamCtl').hidden = !isTeam;
+  document.getElementById('teamOut').hidden = !isTeam;
+  window.scrollTo(0, 0);
+  if (isTeam){ if (data) TEAM.render(); }
+  else if (data) render();
+}));
+document.querySelectorAll('#listCtl .chips').forEach(box => box.addEventListener('click', ev => {
+  const c = ev.target.closest('.chip'); if (!c) return;
+  const k = c.dataset.k, v = +c.dataset.v;
+  F[k].has(v) ? F[k].delete(v) : F[k].add(v);
+  c.classList.toggle('on'); render();
+}));
+let qTimer;
+document.getElementById('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(render, 150); });
+['fOwn', 'fSort', 'fVar'].forEach(id => document.getElementById(id).addEventListener('change', render));
+document.getElementById('btnRefresh').addEventListener('click', async () => {
+  const b = document.getElementById('btnRefresh');
+  b.disabled = true; b.textContent = '更新中…';
+  try{ data = await fetchData(); buildChips(); render(); b.textContent = '已更新'; }
+  catch(err){ alert('更新失敗：' + err.message); }
+  setTimeout(() => { b.disabled = false; b.textContent = '更新資料'; }, 1500);
+});
+document.getElementById('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({game:'flowerknightgirl', version:1, exported:new Date().toISOString(), k:owned.k}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'fkg_owned_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try{
+    const o = JSON.parse(await f.text());
+    if (!o.k) throw new Error('格式不符');
+    if (!confirm(`匯入 ${Object.keys(o.k).length} 位花騎士，會覆蓋目前紀錄，確定？`)) return;
+    owned = {k:o.k}; saveOwned(); render();
+  }catch(err){ alert('匯入失敗：' + err.message); }
+  ev.target.value = '';
+});
+</script>
+<script src="team.js"></script>
+<script>TEAM.init(); init();</script>
+<script src="../hover.js"></script>
+</body>
+</html>

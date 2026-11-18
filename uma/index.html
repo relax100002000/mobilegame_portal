@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ウマ娘 收藏管理</title>
+<style>
+  :root{--bg:#f3f4f8;--card:#fff;--text:#1d2130;--sub:#6b7085;--line:#e3e5ee;--accent:#4a5cff;--ok:#1f9d55;--gold:#d4a017}
+  @media (prefers-color-scheme: dark){:root{--bg:#14161d;--card:#1f2230;--text:#eceef5;--sub:#9aa0b5;--line:#2e3244;--accent:#8c98ff;--ok:#3ccf7a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+  .wrap{max-width:1300px;margin:0 auto;padding:10px 14px}
+  .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .top h1{margin:0;font-size:20px}
+  .top a.back{color:var(--sub);text-decoration:none;font-size:14px}
+  .top .sp{flex:1}
+  button,select,input{font:inherit;color:var(--text)}
+  .btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+  .btn:hover{border-color:var(--accent)}
+  .tabs{display:flex;gap:6px;margin-top:10px}
+  .tab{padding:7px 16px;border-radius:8px 8px 0 0;border:1px solid var(--line);border-bottom:none;background:var(--card);cursor:pointer;font-weight:600;color:var(--sub)}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+  .filters input[type=search]{flex:1;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .filters select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .chip{padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer;font-size:12px;user-select:none}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stats{margin-top:8px;font-size:13px;color:var(--sub);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .stats b{color:var(--text)}
+  main{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .item{position:relative;background:var(--card);border:2px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;user-select:none}
+  .item .img{position:relative;aspect-ratio:1/1;background:#0002}
+  .item img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1);opacity:.45;transition:.15s}
+  .item.own{border-color:var(--ok)}
+  .item.own img{filter:none;opacity:1}
+  .item .no{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .rar{position:absolute;right:4px;top:4px;background:#000a;color:var(--gold);font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .chk{position:absolute;right:4px;bottom:4px;width:24px;height:24px;border-radius:50%;background:#fffc;border:2px solid #888;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:transparent}
+  .item.own .chk{background:var(--ok);border-color:#fff;color:#fff}
+  .item .nm{font-size:12px;line-height:1.3;padding:4px 5px 2px;height:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .item .cls{font-size:11px;color:var(--sub);padding:0 5px}
+  .np{display:flex;gap:2px;padding:4px 4px 5px;visibility:hidden}
+  .item.own .np{visibility:visible}
+  .np span{flex:1;text-align:center;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:2px 0;color:var(--sub)}
+  .np span.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  .np span.mlb{flex:1}
+  .item.np5 .np span.on{background:var(--gold);border-color:var(--gold)}
+  main[hidden],#teamOut[hidden]{display:none}
+  .filters label{font-size:13px;color:var(--sub);display:flex;align-items:center;gap:5px}
+  #teamOut{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+  .tm-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .tm-head{font-size:13px;display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .tm-b{font-size:12px;padding:2px 8px;border-radius:6px;color:#fff;font-weight:600}
+  .tm-b.ok{background:var(--ok)}.tm-b.mid{background:#d08a00}.tm-b.ng{background:#c33}
+  .tm-mems{display:flex;gap:8px}
+  .tm-mem{width:84px;cursor:pointer;text-align:center}
+  .tm-mem img{width:72px;height:72px;border-radius:8px;display:block;margin:0 auto}
+  .tm-tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-top:3px;color:#fff;background:#888}
+  .tm-tag.t-dps{background:#c33}.tm-tag.t-own{background:var(--accent)}.tm-tag.t-friend{background:#d08a00}
+  .tm-nm{font-size:11px;line-height:1.25;margin-top:2px;max-height:2.5em;overflow:hidden}
+  table.tm-w{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  table.tm-w th,table.tm-w td{border-top:1px solid var(--line);padding:3px 4px;text-align:left;white-space:nowrap}
+  table.tm-w th{color:var(--sub);font-weight:400}
+  table.tm-w td.tm-plan{white-space:normal;color:var(--sub)}
+  .tm-ok{color:var(--ok);font-weight:700}.tm-ng{color:#c33;font-weight:700}
+  @media (max-width:600px){#teamOut{grid-template-columns:1fr;padding:8px}}
+  .msg{grid-column:1/-1;text-align:center;color:var(--sub);padding:40px 0}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:0 16px 30px}
+  footer a{color:var(--sub)}
+  .item .chk{width:30px;height:30px;right:3px;bottom:3px;font-size:17px}
+  .item .chk:hover{border-color:var(--ok)}
+  /* detail modal */
+  #dlg{position:fixed;inset:0;z-index:20;background:#000a;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 10px}
+  #dlg.on{display:flex}
+  body.lock{overflow:hidden}
+  .dbox{position:relative;background:var(--card);border-radius:14px;max-width:880px;width:100%;padding:18px 20px 22px;box-shadow:0 20px 50px #0008}
+  .dclose{position:absolute;right:10px;top:8px;border:none;background:none;font-size:28px;cursor:pointer;color:var(--sub);line-height:1}
+  .dhead{display:flex;gap:14px;align-items:center;padding-right:30px}
+  .dhead img{width:72px;height:72px;border-radius:8px}
+  .dhead h2{margin:0;font-size:20px}
+  .dhead .ruby{color:var(--sub);font-size:12px}
+  .dhead .meta{color:var(--sub);font-size:13px;margin-top:2px}
+  .down{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 4px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+  .down .np{visibility:visible;padding:0;gap:4px}
+  .down .np span{cursor:pointer;padding:4px 10px;font-size:13px}
+  .dcols{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px;margin-top:12px}
+  .dart img{width:100%;border-radius:8px;display:block;background:#0002;min-height:200px}
+  .dart .asc{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .dart .asc span{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+  .dart .asc span.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dbox h3{font-size:15px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .dcols h3:first-child{margin-top:0}
+  table.kv{border-collapse:collapse;font-size:13px;width:100%}
+  table.kv th,table.kv td{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+  table.kv th{background:#8881;white-space:nowrap;font-weight:600;width:1%}
+  .sk{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .sk:last-child{border-bottom:none}
+  .sk img{width:40px;height:40px;flex:none}
+  .sk .t{font-weight:600;font-size:14px}
+  .sk .t small{font-weight:400;color:var(--sub);margin-left:6px}
+  .sk .d{font-size:13px;margin-top:3px;white-space:pre-wrap}
+  .vals{font-size:12px;color:var(--sub);margin-top:4px;overflow-x:auto}
+  .vals table{border-collapse:collapse}
+  .vals td{border:1px solid var(--line);padding:1px 5px;white-space:nowrap}
+  .vals td:first-child{color:var(--text)}
+  .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;background:var(--accent);color:#fff;margin-left:6px;vertical-align:middle}
+  .card-q{color:#2a7de1;font-weight:700}.card-a{color:#1f9d55;font-weight:700}.card-b{color:#d33;font-weight:700}
+  .prof{font-size:13px;white-space:pre-wrap;line-height:1.6;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .prof .cond{display:block;color:var(--sub);font-size:12px}
+  details.older{margin:2px 0 6px 50px;font-size:13px}
+  details.older summary{cursor:pointer;color:var(--sub);font-size:12px}
+  details.older .sk{opacity:.8}
+  .dlink{color:var(--accent);cursor:pointer;text-decoration:underline}
+  .dfoot{margin-top:14px;font-size:12px;color:var(--sub)}
+  .dfoot a{color:var(--sub)}
+  @media (max-width:700px){.dcols{grid-template-columns:1fr}.dart{max-width:320px;margin:0 auto}#dlg{padding:0}.dbox{border-radius:0;min-height:100%}}
+  @media (max-width:600px){header{position:static}main{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}.item .nm{font-size:11px}}
+</style>
+<style>
+  .item .img{aspect-ratio:1/1;background:#8881}
+  .item.sup .img{aspect-ratio:1/1}
+  .ty{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;line-height:15px;color:#fff}
+  .ty-speed{background:#2f8fe0}.ty-stamina{background:#e0503c}.ty-power{background:#d08a00}.ty-guts{background:#e05ca0}.ty-intelligence{background:#2fb37a}.ty-friend{background:#a07a3c}.ty-group{background:#8a5ce0}
+  .item .tags{position:absolute;left:3px;bottom:3px;display:flex;gap:2px}
+  .item .rar.r3{color:#f7c948}.item .rar.r2{color:#d0d6e2}.item .rar.r1{color:#c48a54}
+  .apt{display:inline-block;min-width:16px;text-align:center;font-weight:700;font-size:12px;border-radius:3px}
+  .g-S{color:#f2b600}.g-A{color:#e07020}.g-B{color:#d2508a}.g-C{color:#4aa04a}.g-D{color:#3a8ad0}.g-E{color:#8a6ad0}.g-F{color:#8a8a8a}.g-G{color:#aaa}
+  table.aptt{border-collapse:collapse;font-size:13px}
+  table.aptt th,table.aptt td{border:1px solid var(--line);padding:3px 7px;text-align:center}
+  table.aptt th{background:#8881;font-weight:600}
+  .sk img{width:32px;height:32px}
+  .sk .t small.rr{color:#d4a017}
+  .efx td.on{font-weight:700}
+  .efx td.cur{background:#4a5cff22}
+  .tm-mem{width:92px}
+  .tm-mem img{width:76px;height:76px;object-fit:cover}
+  .tm-mem.rent img{outline:3px dashed #d08a00;outline-offset:-3px}
+  #teamOut{grid-template-columns:repeat(auto-fill,minmax(620px,1fr))}
+  @media (max-width:700px){#teamOut{grid-template-columns:1fr}.tm-mems{overflow-x:auto}}
+  .ctl2{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:8px;font-size:13px;color:var(--sub)}
+  .ctl2 select,.ctl2 input[type=number]{padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .ctl2 input[type=number]{width:80px}
+  #deckInfo,#cmInfo{display:block;line-height:1.7}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top">
+    <a class="back" href="../">← Portal</a>
+    <h1>ウマ娘 プリティーダービー 收藏管理（日服）</h1>
+    <span class="sp"></span>
+    <button class="btn" id="btnExport">匯出</button>
+    <button class="btn" id="btnImport">匯入</button>
+    <button class="btn" id="btnRefresh">更新資料</button>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-tab="uma">育成ウマ娘</div>
+    <div class="tab" data-tab="sup">サポートカード</div>
+    <div class="tab" data-tab="deck">サポカ編成</div>
+    <div class="tab" data-tab="cm">チャンミ出走</div>
+  </div>
+  <div id="listCtl">
+    <div class="filters">
+      <input type="search" id="q" placeholder="名前・二つ名で検索">
+      <select id="fOwn">
+        <option value="all">全部</option>
+        <option value="own">持有</option>
+        <option value="not">未持有</option>
+        <option value="max">★5／完凸</option>
+        <option value="notmax">持有但未滿</option>
+      </select>
+      <select id="fSort">
+        <option value="new">實裝 新→舊</option>
+        <option value="old">實裝 舊→新</option>
+        <option value="rar">稀有度 ↓</option>
+        <option value="name">名前順</option>
+      </select>
+    </div>
+    <div class="chips" id="chipRar"></div>
+    <div class="chips" id="chipA"></div>
+    <div class="chips" id="chipB"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div id="deckCtl" hidden>
+    <div class="ctl2">
+      <label>育成ウマ娘 <select id="dkUma"></select></label>
+      <label>目標距離 <select id="dkDist"><option value="">依適性自動</option><option value="0">短距離</option><option value="1">マイル</option><option value="2">中距離</option><option value="3">長距離</option></select></label>
+      <label>フレンド借用 <select id="dkRent"><option value="1">借 1 張完凸</option><option value="0">不借</option></select></label>
+      <label><input type="checkbox" id="dkFriend" checked> 可用友人／グループ</label>
+    </div>
+    <div class="stats" id="deckInfo"></div>
+  </div>
+  <div id="cmCtl" hidden>
+    <div class="ctl2">
+      <label>チャンミ <select id="cmEv"></select></label>
+      <label>或自訂：距離 <input type="number" id="cmDist" min="1000" max="3600" step="100"> m</label>
+      <label>バ場 <select id="cmGround"><option value="1">芝</option><option value="2">ダート</option></select></label>
+      <label><input type="checkbox" id="cmOwnOnly" checked> 只用持有</label>
+    </div>
+    <div class="stats" id="cmInfo"></div>
+  </div>
+</div></header>
+<main id="grid"><div class="msg">讀取資料中…</div></main>
+<section id="teamOut" hidden></section>
+<div id="dlg"><div class="dbox"><button class="dclose" title="關閉">×</button><div id="dbody"></div></div></div>
+<footer>資料與圖片來自 <a href="https://gametora.com/umamusume" target="_blank" rel="noopener">GameTora</a>，著作權屬 Cygames 所有。點圖片看詳細資料，點右下圓圈打勾持有，下方選星數（ウマ娘）或凸數（サポカ）。持有紀錄存在此瀏覽器，換裝置請用「匯出／匯入」。</footer>
+
+<script>
+const GT = 'https://gametora.com/data/umamusume/';
+const IMG = 'https://gametora.com/images/umamusume/';
+const SAVE_KEY = 'uma_owned_v1';
+const CACHE_KEY = 'uma_data_v1';
+const TODAY = () => new Date().toISOString().slice(0, 10);
+const TYPE = {speed:'スピード', stamina:'スタミナ', power:'パワー', guts:'根性', intelligence:'賢さ', friend:'友人', group:'グループ'};
+const TYPE_S = {speed:'スピ', stamina:'スタ', power:'パワ', guts:'根性', intelligence:'賢さ', friend:'友人', group:'グル'};
+const SRAR = {3:'SSR', 2:'SR', 1:'R'};
+const APT_LAB = ['芝', 'ダート', '短距離', 'マイル', '中距離', '長距離', '逃げ', '先行', '差し', '追込'];
+const STYLE = ['逃げ', '先行', '差し', '追込'];
+const DIST = ['短距離', 'マイル', '中距離', '長距離'];
+const STAT = ['スピード', 'スタミナ', 'パワー', '根性', '賢さ'];
+const GV = {S:10, A:9, B:7, C:5, D:3, E:2, F:1, G:0};
+const OBT = {gacha:'ガチャ', story_event:'イベント', limited_quest:'限定', shop:'ショップ', main_story:'メイン', promo:'配布', event:'イベント'};
+const TRACK = {10001:'札幌', 10002:'函館', 10003:'福島', 10004:'新潟', 10005:'中山', 10006:'東京', 10007:'中京', 10008:'京都', 10009:'阪神', 10010:'小倉', 10101:'大井', 10103:'川崎', 10104:'船橋', 10105:'盛岡', 10201:'ロンシャン'};
+const distCat = m => m <= 1400 ? 0 : m <= 1800 ? 1 : m <= 2400 ? 2 : 3;
+
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const umaThumb = c => `${IMG}characters/thumb/chara_stand_${c.cid}_${c.id}.png`;
+const umaBig = c => `${IMG}characters/chara_stand_${c.cid}_${c.id}.png`;
+const supThumb = s => `${IMG}supports/support_card_s_${s.id}.png`;
+const supBig = s => `${IMG}supports/tex_support_card_${s.id}.png`;
+const skIcon = id => `${IMG}skill_icons/utx_ico_skill_${id}.png`;
+
+/* ---- 持有：ウマ娘＝星數（初期★〜5），サポカ＝凸數＋1（1＝無凸〜5＝完凸） ---- */
+let data = null;   // {cards, sups, eff, cm, time}
+let owned = {c:{}, s:{}};
+try{ const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (o && o.c) owned = {c:o.c, s:o.s || {}}; }catch(e){}
+function saveOwned(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(owned)); }catch(e){ alert('儲存失敗：' + e.message); } }
+let tab = 'uma';
+const F = {uma:{r:new Set(), a:new Set(), b:new Set()}, sup:{r:new Set(), a:new Set(), b:new Set()}};
+
+async function fetchData(){
+  const man = await fetch('https://gametora.com/data/manifests/umamusume.json', {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error('manifest HTTP ' + r.status); return r.json(); });
+  const get = k => fetch(`${GT}${k}.${man[k]}.json`).then(r => { if (!r.ok) throw new Error(k + ' HTTP ' + r.status); return r.json(); });
+  const [cc, sc, se, cm] = await Promise.all([get('character-cards'), get('support-cards'), get('support_effects'), get('events/champions-meeting').catch(() => [])]);
+  const t = TODAY();
+  const cards = cc.filter(c => c.release && c.release <= t).map(c => ({
+    id:c.card_id, cid:c.char_id, name:c.name_jp, title:(c.title_jp || '').replace(/^\[|\]$/g, ''), r:c.rarity, apt:c.aptitude, rel:c.release, obt:c.obtained,
+    st:[c.base_stats, c.four_star_stats, c.five_star_stats], bonus:c.stat_bonus,
+    sk:{u:c.skills_unique || [], i:c.skills_innate || [], a:c.skills_awakening || [], e:c.skills_event || []}
+  }));
+  const sups = sc.filter(s => s.release && s.release <= t).map(s => ({
+    id:s.support_id, cid:s.char_id, name:s.name_jp, title:(s.title_ja || '').replace(/^\[|\]$/g, ''), r:s.rarity, type:s.type, rel:s.release, obt:s.obtained,
+    ef:s.effects || [], un:s.unique || null, hs:(s.hints && s.hints.hint_skills) || [], es:s.event_skills || []
+  }));
+  const eff = {}; se.forEach(e => eff[e.id] = {n:e.name_ja, p:e.symbol === 'percent', d:e.desc_ja});
+  const d = {cards, sups, eff, cm:(Array.isArray(cm) ? cm : []).map(e => ({id:e.id, name:e.name, start:e.start, track:e.race.track, dist:e.race.distance, ground:e.race.ground})), man:{skills:man.skills}, time:Date.now()};
+  try{ localStorage.setItem(CACHE_KEY, JSON.stringify(d)); }catch(e){ console.warn('cache', e); }
+  return d;
+}
+let skillMap = null;
+async function getSkills(){
+  if (skillMap) return skillMap;
+  const man = data.man && data.man.skills ? data.man : await fetch('https://gametora.com/data/manifests/umamusume.json').then(r => r.json());
+  const L = await fetch(`${GT}skills.${man.skills}.json`).then(r => { if (!r.ok) throw new Error('skills HTTP ' + r.status); return r.json(); });
+  skillMap = {}; L.forEach(s => skillMap[s.id] = {n:s.jpname || s.name_en || s.enname, d:s.jpdesc || s.desc_en, r:s.rarity, ic:s.iconid});
+  return skillMap;
+}
+
+async function init(){
+  try{ data = JSON.parse(localStorage.getItem(CACHE_KEY)); }catch(e){ data = null; }
+  if (data){ buildChips(); render(); }
+  if (!data || Date.now() - data.time > 86400000){
+    try{
+      const fresh = await fetchData();
+      const changed = !data || fresh.cards.length !== data.cards.length || fresh.sups.length !== data.sups.length;
+      data = fresh;
+      if (changed){ buildChips(); render(); }
+    }catch(err){
+      if (!data) document.getElementById('grid').innerHTML = '<div class="msg">資料讀取失敗：' + esc(err.message) + '<br>請確認網路後按「更新資料」。</div>';
+    }
+  }
+  if (data) TEAM.setup();
+  if (!curDetail) routeHash();
+  const h = location.hash.slice(1);
+  if (['sup', 'deck', 'cm'].includes(h)) document.querySelector(`.tab[data-tab="${h}"]`).click();
+}
+
+/* ===== 清單 ===== */
+function buildChips(){
+  const f = F[tab === 'sup' ? 'sup' : 'uma'];
+  const mk = (id, k, vals, lab) => document.getElementById(id).innerHTML = vals.map(v => `<span class="chip${f[k].has(String(v)) ? ' on' : ''}" data-k="${k}" data-v="${v}">${lab(v)}</span>`).join('');
+  if (tab === 'sup'){
+    mk('chipRar', 'r', [3, 2, 1], v => SRAR[v]);
+    mk('chipA', 'a', Object.keys(TYPE), v => `<span class="ty ty-${v}">${TYPE[v]}</span>`);
+    mk('chipB', 'b', [...new Set(data.sups.map(s => s.obt))], v => OBT[v] || v);
+  } else {
+    mk('chipRar', 'r', [3, 2, 1], v => '★' + v);
+    mk('chipA', 'a', [0, 1, 2, 3, 4, 5], v => APT_LAB[v] + ' A↑');
+    mk('chipB', 'b', [6, 7, 8, 9], v => APT_LAB[v] + ' A↑');
+  }
+}
+function filtered(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const fo = document.getElementById('fOwn').value, so = document.getElementById('fSort').value;
+  const isSup = tab === 'sup', f = F[isSup ? 'sup' : 'uma'];
+  const L = (isSup ? data.sups : data.cards).filter(x => {
+    if (f.r.size && !f.r.has(String(x.r))) return false;
+    if (isSup){
+      if (f.a.size && !f.a.has(x.type)) return false;
+      if (f.b.size && !f.b.has(x.obt)) return false;
+    } else {
+      for (const i of f.a) if (GV[x.apt[i]] < 9) return false;
+      for (const i of f.b) if (GV[x.apt[i]] < 9) return false;
+    }
+    if (q && !(x.name.toLowerCase().includes(q) || x.title.toLowerCase().includes(q))) return false;
+    const v = (isSup ? owned.s : owned.c)[x.id] || 0, mx = isSup ? 5 : 5;
+    if (fo === 'own' && !v) return false;
+    if (fo === 'not' && v) return false;
+    if (fo === 'max' && !(v >= mx)) return false;
+    if (fo === 'notmax' && !(v && v < mx)) return false;
+    return true;
+  });
+  if (so === 'old') L.sort((a, b) => a.rel.localeCompare(b.rel) || a.id - b.id);
+  else if (so === 'rar') L.sort((a, b) => b.r - a.r || b.rel.localeCompare(a.rel));
+  else if (so === 'name') L.sort((a, b) => a.name.localeCompare(b.name, 'ja') || a.id - b.id);
+  else L.sort((a, b) => b.rel.localeCompare(a.rel) || b.id - a.id);
+  return L;
+}
+function umaCard(c){
+  const v = owned.c[c.id] || 0;
+  return `<div class="item${v ? ' own' : ''}${v >= 5 ? ' np5' : ''}" data-id="${c.id}" data-k="c">
+    <div class="img"><img loading="lazy" src="${umaThumb(c)}" data-big="${umaBig(c)}" alt=""><span class="rar r${c.r}">★${c.r}</span><span class="chk">✓</span></div>
+    <div class="nm" title="${esc(c.title)}">${esc(c.name)}</div>
+    <div class="cls" title="${esc(c.title)}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.title)}</div>
+    <div class="np">${[1, 2, 3, 4, 5].filter(n => n >= c.r).map(n => `<span data-np="${n}" class="${v === n ? 'on' : ''}">★${n}</span>`).join('')}</div></div>`;
+}
+function supCard(s){
+  const v = owned.s[s.id] || 0;
+  return `<div class="item sup${v ? ' own' : ''}${v >= 5 ? ' np5' : ''}" data-id="${s.id}" data-k="s">
+    <div class="img"><img loading="lazy" src="${supThumb(s)}" data-big="${supBig(s)}" alt=""><span class="rar r${s.r}">${SRAR[s.r]}</span>
+      <span class="tags"><span class="ty ty-${s.type}">${TYPE_S[s.type] || s.type}</span></span><span class="chk">✓</span></div>
+    <div class="nm" title="${esc(s.title)}">${esc(s.name)}</div>
+    <div class="cls" title="${esc(s.title)}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(s.title)}</div>
+    <div class="np" title="凸數">${[1, 2, 3, 4, 5].map(n => `<span data-np="${n}" class="${v === n ? 'on' : ''}">${n === 5 ? '完' : n - 1}</span>`).join('')}</div></div>`;
+}
+function render(){
+  if (!data) return;
+  const L = filtered(), g = document.getElementById('grid');
+  const fn = tab === 'sup' ? supCard : umaCard;
+  g.innerHTML = L.length ? L.map(fn).join('') : '<div class="msg">沒有符合的項目</div>';
+  renderStats(L.length);
+}
+function renderStats(shown){
+  let h;
+  if (tab === 'sup'){
+    const L = data.sups, own = L.filter(s => owned.s[s.id]);
+    h = `<span>持有 <b>${own.length}</b> / ${L.length}</span>` + [3, 2, 1].map(r => `<span>${SRAR[r]} <b>${own.filter(s => s.r === r).length}</b>/${L.filter(s => s.r === r).length}</span>`).join('') +
+      `<span>SSR 完凸 <b>${own.filter(s => s.r === 3 && owned.s[s.id] >= 5).length}</b></span>`;
+  } else {
+    const L = data.cards, own = L.filter(c => owned.c[c.id]);
+    h = `<span>持有 <b>${own.length}</b> / ${L.length}</span>` + [3, 2, 1].map(r => `<span>初期★${r} <b>${own.filter(c => c.r === r).length}</b>/${L.filter(c => c.r === r).length}</span>`).join('') +
+      `<span>★5 <b>${own.filter(c => owned.c[c.id] >= 5).length}</b></span>`;
+  }
+  h += `<span>顯示中 ${shown}</span>`;
+  if (data.time) h += `<span>資料：${new Date(data.time).toLocaleString()}</span>`;
+  document.getElementById('stats').innerHTML = h;
+}
+function setOwn(k, id, v){
+  const box = k === 's' ? owned.s : owned.c;
+  if (v) box[id] = v; else delete box[id];
+  saveOwned();
+  const el = document.querySelector(`#grid .item[data-k="${k}"][data-id="${id}"]`);
+  if (el){
+    const x = k === 's' ? data.sups.find(s => s.id === id) : data.cards.find(c => c.id === id);
+    const tmp = document.createElement('div'); tmp.innerHTML = (k === 's' ? supCard : umaCard)(x); el.replaceWith(tmp.firstElementChild);
+  }
+  if (!document.getElementById('grid').hidden) renderStats(document.querySelectorAll('#grid .item').length);
+}
+function initVal(k, id){ return k === 's' ? 1 : data.cards.find(c => c.id === id).r; }
+document.getElementById('grid').addEventListener('click', ev => {
+  const el = ev.target.closest('.item'); if (!el) return;
+  const id = +el.dataset.id, k = el.dataset.k, np = ev.target.closest('[data-np]');
+  const box = k === 's' ? owned.s : owned.c;
+  if (np) setOwn(k, id, +np.dataset.np);
+  else if (ev.target.closest('.chk')) setOwn(k, id, box[id] ? 0 : initVal(k, id));
+  else { pushedHash = true; location.hash = k + '-' + id; }
+});
+
+/* ===== 詳細資料 ===== */
+let curDetail = null, pushedHash = false;
+const aptCell = g => `<span class="apt g-${g}">${g}</span>`;
+function maxLevel(s, lb){ return {3:30, 2:25, 1:20}[s.r] + 5 * lb; }
+function effAt(arr, lv){   // arr = [type, Lv1, Lv5, Lv10 … Lv50]，-1 = 沿用前值
+  const idx = lv <= 1 ? 1 : Math.min(11, 1 + Math.floor(lv / 5));
+  let v = 0; for (let i = 1; i <= idx; i++) if (arr[i] !== -1 && arr[i] != null) v = arr[i];
+  return v;
+}
+function supEffects(s, lv){   // {type:value}（含固有）
+  const o = {};
+  s.ef.forEach(a => { const v = effAt(a, lv); if (v) o[a[0]] = (o[a[0]] || 0) + v; });
+  if (s.un && lv >= (s.un.level || 0)) (s.un.effects || []).forEach(e => { if (e.type < 100 && e.value) o[e.type] = (o[e.type] || 0) + e.value; });
+  return o;
+}
+function ownBarHTML(k, x){
+  const box = k === 's' ? owned.s : owned.c, v = box[x.id] || 0;
+  let h = `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600"><input type="checkbox" id="downChk" ${v ? 'checked' : ''}> 持有</label>`;
+  if (v) h += `<div class="np">` + (k === 's'
+    ? [1, 2, 3, 4, 5].map(n => `<span data-dnp="${n}" class="${v === n ? 'on' : ''}">${n === 5 ? '完凸' : (n - 1) + '凸'}</span>`).join('')
+    : [1, 2, 3, 4, 5].filter(n => n >= x.r).map(n => `<span data-dnp="${n}" class="${v === n ? 'on' : ''}">★${n}</span>`).join('')) + '</div>';
+  return h;
+}
+function skillRows(ids, S, label){
+  if (!ids || !ids.length) return '';
+  return `<h3>${label}</h3>` + [...new Set(ids)].map(id => { const s = S[id]; if (!s) return '';
+    return `<div class="sk"><img loading="lazy" src="${skIcon(s.ic)}" alt="" onerror="this.style.visibility='hidden'"><div><div class="t">${esc(s.n)}${s.r >= 2 ? '<small class="rr">金</small>' : ''}</div><div class="d">${esc(s.d || '')}</div></div></div>`; }).join('');
+}
+function umaDetail(c, S){
+  const v = owned.c[c.id] || c.r;
+  const sti = v >= 5 ? 2 : v === 4 ? 1 : 0;
+  return `<div class="dcols"><div class="dart"><img src="${umaBig(c)}" alt=""></div><div>
+    <h3>適性</h3>
+    <table class="aptt"><tr><th>バ場</th><th>芝</th><td>${aptCell(c.apt[0])}</td><th>ダート</th><td>${aptCell(c.apt[1])}</td><td colspan="4"></td></tr>
+      <tr><th>距離</th>${[2, 3, 4, 5].map(i => `<th>${APT_LAB[i]}</th><td>${aptCell(c.apt[i])}</td>`).join('')}</tr>
+      <tr><th>脚質</th>${[6, 7, 8, 9].map(i => `<th>${APT_LAB[i]}</th><td>${aptCell(c.apt[i])}</td>`).join('')}</tr></table>
+    <h3>初期能力</h3>
+    <table class="kv"><tr><th></th>${STAT.map(s => `<th>${s}</th>`).join('')}<th>合計</th></tr>
+      ${[['初期', 0], ['★4', 1], ['★5', 2]].map(([lab, i]) => c.st[i] ? `<tr style="${i === sti ? 'font-weight:700' : ''}"><th>${lab}</th>${c.st[i].map(n => `<td>${n}</td>`).join('')}<td>${c.st[i].reduce((a, b) => a + b, 0)}</td></tr>` : '').join('')}
+      <tr><th>成長率</th>${(c.bonus || []).map(n => `<td>${n ? '+' + n + '%' : '-'}</td>`).join('')}<td></td></tr></table>
+    <table class="kv" style="margin-top:8px"><tr><th>實裝</th><td>${esc(c.rel)}</td></tr><tr><th>入手</th><td>${esc(OBT[c.obt] || c.obt || '')}</td></tr><tr><th>ID</th><td>${c.id}</td></tr></table>
+    </div></div>` +
+    (S ? skillRows(c.sk.u, S, '固有スキル') + skillRows(c.sk.i, S, '初期スキル') + skillRows(c.sk.a, S, '覚醒スキル') + skillRows(c.sk.e, S, 'イベント取得スキル') : '<h3>スキル</h3><p id="skLoad" style="color:var(--sub)">讀取スキル資料中…</p>') +
+    `<div class="dfoot">資料來源：<a href="https://gametora.com/umamusume/characters/${c.id}" target="_blank" rel="noopener">GameTora</a></div>`;
+}
+function supDetail(s, S){
+  const v = owned.s[s.id] || 0, lbs = [0, 1, 2, 3, 4], cur = v ? v - 1 : -1;
+  const types = [...new Set(s.ef.map(a => a[0]))];
+  const tbl = `<table class="kv efx"><tr><th>效果</th>${lbs.map(lb => `<th class="${lb === cur ? 'cur' : ''}">${lb === 4 ? '完凸' : lb + '凸'}<br><small>Lv${maxLevel(s, lb)}</small></th>`).join('')}</tr>` +
+    types.map(t => { const e = data.eff[t] || {n:'効果' + t}; return `<tr><th title="${esc(e.d || '')}">${esc(e.n)}</th>${lbs.map(lb => { const val = effAt(s.ef.find(a => a[0] === t), maxLevel(s, lb)); return `<td class="${lb === cur ? 'cur' : ''}">${val ? val + (e.p ? '%' : '') : '-'}</td>`; }).join('')}</tr>`; }).join('') + '</table>';
+  let un = '';
+  if (s.un && s.un.effects && s.un.effects.length) un = `<h3>固有ボーナス（Lv${s.un.level} 以上）</h3><table class="kv">` + s.un.effects.map(e => { const d = data.eff[e.type]; return `<tr><th>${esc(d ? d.n : '特殊効果 ' + e.type)}</th><td>${e.value}${d && d.p ? '%' : ''}${e.value_1 != null ? `（參數 ${e.value_1}${e.value_2 != null ? ' / ' + e.value_2 : ''}）` : ''}</td></tr>`; }).join('') + '</table>';
+  return `<div class="dcols"><div class="dart"><img src="${supBig(s)}" alt=""></div><div>
+    <table class="kv"><tr><th>タイプ</th><td><span class="ty ty-${s.type}">${TYPE[s.type] || s.type}</span></td></tr><tr><th>レア</th><td>${SRAR[s.r]}</td></tr>
+      <tr><th>實裝</th><td>${esc(s.rel)}</td></tr><tr><th>入手</th><td>${esc(OBT[s.obt] || s.obt || '')}</td></tr><tr><th>ID</th><td>${s.id}</td></tr></table>
+    <h3>サポート効果（各凸數的最大 Lv）</h3><div style="overflow-x:auto">${tbl}</div>${un}</div></div>` +
+    (S ? skillRows(s.hs, S, 'ヒントスキル') + skillRows(s.es, S, 'イベント取得スキル') : '<h3>スキル</h3><p id="skLoad" style="color:var(--sub)">讀取スキル資料中…</p>') +
+    `<div class="dfoot">資料來源：<a href="https://gametora.com/umamusume/supports/${s.id}" target="_blank" rel="noopener">GameTora</a></div>`;
+}
+function headHTML(k, x){
+  const img = k === 's' ? supThumb(x) : umaThumb(x);
+  return `<div class="dhead"><img src="${img}" alt=""><div><div class="ruby">${esc(x.title)}</div><h2>${esc(x.name)}</h2>
+    <div class="meta">${k === 's' ? `${SRAR[x.r]}｜${TYPE[x.type] || x.type}` : `初期★${x.r}`}｜${esc(x.rel)}</div></div></div>
+    <div class="down" id="down">${ownBarHTML(k, x)}</div>`;
+}
+function findX(k, id){ return k === 's' ? data.sups.find(s => s.id === id) : data.cards.find(c => c.id === id); }
+function paint(){
+  const {k, id} = curDetail, x = findX(k, id);
+  document.getElementById('dbody').innerHTML = headHTML(k, x) + (k === 's' ? supDetail(x, skillMap) : umaDetail(x, skillMap));
+}
+function openDetail(k, id){
+  const x = data && findX(k, id);
+  if (!x){ closeDetail(); return; }
+  curDetail = {k, id};
+  document.getElementById('dlg').classList.add('on');
+  document.body.classList.add('lock');
+  paint();
+  document.getElementById('dlg').scrollTop = 0;
+  if (!skillMap) getSkills().then(() => { if (curDetail && curDetail.id === id) paint(); })
+    .catch(err => { const p = document.getElementById('skLoad'); if (p) p.textContent = 'スキル資料讀取失敗：' + err.message; });
+}
+function closeDetail(){ curDetail = null; document.getElementById('dlg').classList.remove('on'); document.body.classList.remove('lock'); }
+function hideDetail(){
+  if (pushedHash){ pushedHash = false; history.back(); }
+  else { history.replaceState(null, '', location.pathname + location.search); closeDetail(); }
+}
+function routeHash(){
+  const m = location.hash.match(/^#([cs])-(\d+)$/);
+  if (m && data) openDetail(m[1], +m[2]); else closeDetail();
+}
+window.addEventListener('hashchange', routeHash);
+document.querySelector('.dclose').addEventListener('click', hideDetail);
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && curDetail) hideDetail(); });
+document.getElementById('dlg').addEventListener('click', ev => {
+  if (ev.target.id === 'dlg'){ hideDetail(); return; }
+  const np = ev.target.closest('[data-dnp]');
+  if (np && curDetail){ setOwn(curDetail.k, curDetail.id, +np.dataset.dnp); const y = document.getElementById('dlg').scrollTop; paint(); document.getElementById('dlg').scrollTop = y; }
+});
+document.getElementById('dlg').addEventListener('change', ev => {
+  if (ev.target.id === 'downChk' && curDetail){ setOwn(curDetail.k, curDetail.id, ev.target.checked ? initVal(curDetail.k, curDetail.id) : 0); const y = document.getElementById('dlg').scrollTop; paint(); document.getElementById('dlg').scrollTop = y; }
+});
+
+/* ===== 分頁、篩選、匯出入 ===== */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  const prev = tab; tab = t.dataset.tab;
+  const isList = tab === 'uma' || tab === 'sup';
+  document.getElementById('listCtl').hidden = !isList;
+  document.getElementById('grid').hidden = !isList;
+  document.getElementById('deckCtl').hidden = tab !== 'deck';
+  document.getElementById('cmCtl').hidden = tab !== 'cm';
+  document.getElementById('teamOut').hidden = isList;
+  window.scrollTo(0, 0);
+  if (!data) return;
+  if (isList){
+    if (prev !== tab){ document.getElementById('q').value = ''; document.getElementById('fOwn').value = 'all'; }
+    buildChips(); render();
+  } else TEAM.render(tab);
+}));
+document.querySelectorAll('#listCtl .chips').forEach(box => box.addEventListener('click', ev => {
+  const c = ev.target.closest('.chip'); if (!c) return;
+  const f = F[tab === 'sup' ? 'sup' : 'uma'][c.dataset.k], v = c.dataset.v;
+  f.has(v) ? f.delete(v) : f.add(v);
+  c.classList.toggle('on'); render();
+}));
+let qTimer;
+document.getElementById('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(render, 150); });
+['fOwn', 'fSort'].forEach(id => document.getElementById(id).addEventListener('change', render));
+document.getElementById('btnRefresh').addEventListener('click', async () => {
+  const b = document.getElementById('btnRefresh');
+  b.disabled = true; b.textContent = '更新中…';
+  try{ data = await fetchData(); skillMap = null; TEAM.setup(); if (tab === 'uma' || tab === 'sup'){ buildChips(); render(); } else TEAM.render(tab); b.textContent = '已更新'; }
+  catch(err){ alert('更新失敗：' + err.message); }
+  setTimeout(() => { b.disabled = false; b.textContent = '更新資料'; }, 1500);
+});
+document.getElementById('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({game:'umamusume', version:1, exported:new Date().toISOString(), c:owned.c, s:owned.s}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'uma_owned_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try{
+    const o = JSON.parse(await f.text());
+    if (!o.c) throw new Error('格式不符');
+    if (!confirm(`匯入 ウマ娘 ${Object.keys(o.c).length}、サポカ ${Object.keys(o.s || {}).length} 筆，會覆蓋目前紀錄，確定？`)) return;
+    owned = {c:o.c, s:o.s || {}}; saveOwned(); render(); TEAM.setup();
+  }catch(err){ alert('匯入失敗：' + err.message); }
+  ev.target.value = '';
+});
+</script>
+<script src="team.js"></script>
+<script>TEAM.init(); init();</script>
+<script src="../hover.js"></script>
+</body>
+</html>
