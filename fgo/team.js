@@ -282,7 +282,7 @@ const TEAM = (() => {
       const t0 = performance.now();
       const res = recommend(store.prof, owned.svt, o, envOf(o));
       const okN = res.filter(x => x.r.ok).length;
-      info.innerHTML = `持有可當主力（全體寶具）${res.length} 位，其中 ${okN} 位能 3 連發寶具｜計算 ${(performance.now() - t0).toFixed(0)}ms｜技能資料：${new Date(store.time).toLocaleDateString()} <span class="dlink" id="tmRebuild">重新下載</span>`;
+      info.innerHTML = `持有可當主力（全體寶具）${res.length} 位，其中 ${okN} 位能 3 連發寶具｜計算 ${(performance.now() - t0).toFixed(0)}ms｜技能資料：${new Date(store.time).toLocaleDateString()} <span class="dlink" id="tmRebuild">重新下載</span><br>估算前提：技能皆 Lv10、每波 3 隻敵人、不計暴擊與特攻、未填 HP 時回收不計擊殺加成；好友輔助從充能量最高的 15 位中挑。結果僅供參考。`;
       document.getElementById('tmRebuild').onclick = () => { localStorage.removeItem(CACHE); store = null; render(); };
       box.innerHTML = res.length ? res.slice(0, o.show).map(x => teamHTML(x, o)).join('') : '<div class="msg">持有的從者中沒有全體寶具的主力。</div>';
     }, 20);

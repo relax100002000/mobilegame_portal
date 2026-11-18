@@ -27,7 +27,7 @@ const TEAM = (() => {
   const weak = new Set();
 
   /* ---------- 光錐 ---------- */
-  // 限定五星光錐 → 專屬角色（23000～23044 依記憶手填；之後的用「敘述提到角色名且命途相同」推測）
+  // 限定五星光錐 → 專屬角色（23000～23044 手填，已核對命途一致；之後的用「效果或故事提到角色名且命途相同」推測）
   const LC_OWNER = {
     23000:1003, 23001:1102, 23002:1107, 23003:1101, 23004:1004, 23005:1104, 23006:1005, 23007:1006,
     23008:1203, 23009:1205, 23010:1204, 23011:1208, 23014:1212, 23015:1213, 23016:1112, 23017:1217,
@@ -36,7 +36,7 @@ const TEAM = (() => {
     23034:1313, 23035:1225, 23036:1402, 23037:1401, 23038:1403, 23039:1404, 23040:1407, 23041:1405,
     23042:1409, 23043:1406, 23044:1408
   };
-  const LC_KEY = 'hsr_lcinfo_v1';
+  const LC_KEY = 'hsr_lcinfo_v2';
   let lcInfo = {};
   try{ lcInfo = JSON.parse(localStorage.getItem(LC_KEY)) || {}; }catch(e){}
   const strip = t => String(t || '').replace(/<[^>]+>/g, '').replace(/\\n/g, ' ');
@@ -49,7 +49,7 @@ const TEAM = (() => {
         const id = need.shift();
         try{
           const r = await fetch(API + 'equipment/' + id);
-          if (r.ok){ const d = (await r.json()).data; lcInfo[id] = {t: strip(d.skill && d.skill.name) + '：' + strip(d.skill && d.skill.description)}; }
+          if (r.ok){ const d = (await r.json()).data; lcInfo[id] = {t: strip(d.skill && d.skill.name) + '：' + strip(d.skill && d.skill.description), s: strip(d.description)}; }
         }catch(e){}
         onProgress && onProgress(++done);
       }
@@ -62,7 +62,7 @@ const TEAM = (() => {
   function ownerOf(lc){
     if (LC_OWNER[lc.id]) return LC_OWNER[lc.id];
     if (lc.r !== 5 || lc.id < 23045 || lc.id >= 24000 || !lcInfo[lc.id]) return 0;
-    const txt = lcInfo[lc.id].t;
+    const txt = lcInfo[lc.id].t + (lcInfo[lc.id].s || '');
     const c = data.chr.filter(c => c.id < 8000 && c.p === lc.p && txt.includes(c.name.split(/[•＆&]/)[0]));
     return c.length === 1 ? c[0].id : 0;
   }

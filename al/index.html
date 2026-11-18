@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>アズールレーン 收藏管理（日服）</title>
+<style>
+  :root{--bg:#f3f4f8;--card:#fff;--text:#1d2130;--sub:#6b7085;--line:#e3e5ee;--accent:#4a5cff;--ok:#1f9d55;--gold:#d4a017}
+  @media (prefers-color-scheme: dark){:root{--bg:#14161d;--card:#1f2230;--text:#eceef5;--sub:#9aa0b5;--line:#2e3244;--accent:#8c98ff;--ok:#3ccf7a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+  .wrap{max-width:1300px;margin:0 auto;padding:10px 14px}
+  .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .top h1{margin:0;font-size:20px}
+  .top a.back{color:var(--sub);text-decoration:none;font-size:14px}
+  .top .sp{flex:1}
+  button,select,input{font:inherit;color:var(--text)}
+  .btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+  .btn:hover{border-color:var(--accent)}
+  .tabs{display:flex;gap:6px;margin-top:10px}
+  .tab{padding:7px 16px;border-radius:8px 8px 0 0;border:1px solid var(--line);border-bottom:none;background:var(--card);cursor:pointer;font-weight:600;color:var(--sub)}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+  .filters input[type=search]{flex:1;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .filters select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .chip{padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer;font-size:12px;user-select:none}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stats{margin-top:8px;font-size:13px;color:var(--sub);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .stats b{color:var(--text)}
+  main{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .item{position:relative;background:var(--card);border:2px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;user-select:none}
+  .item .img{position:relative;aspect-ratio:1/1;background:#0002}
+  .item img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1);opacity:.45;transition:.15s}
+  .item.own{border-color:var(--ok)}
+  .item.own img{filter:none;opacity:1}
+  .item .no{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .rar{position:absolute;right:4px;top:4px;background:#000a;color:var(--gold);font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .chk{position:absolute;right:4px;bottom:4px;width:24px;height:24px;border-radius:50%;background:#fffc;border:2px solid #888;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:transparent}
+  .item.own .chk{background:var(--ok);border-color:#fff;color:#fff}
+  .item .nm{font-size:12px;line-height:1.3;padding:4px 5px 2px;height:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .item .cls{font-size:11px;color:var(--sub);padding:0 5px}
+  .np{display:flex;gap:2px;padding:4px 4px 5px;visibility:hidden}
+  .item.own .np{visibility:visible}
+  .np span{flex:1;text-align:center;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:2px 0;color:var(--sub)}
+  .np span.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  .np span.mlb{flex:1}
+  .item.np5 .np span.on{background:var(--gold);border-color:var(--gold)}
+  main[hidden],#teamOut[hidden]{display:none}
+  .filters label{font-size:13px;color:var(--sub);display:flex;align-items:center;gap:5px}
+  #teamOut{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+  .tm-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .tm-head{font-size:13px;display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .tm-b{font-size:12px;padding:2px 8px;border-radius:6px;color:#fff;font-weight:600}
+  .tm-b.ok{background:var(--ok)}.tm-b.mid{background:#d08a00}.tm-b.ng{background:#c33}
+  .tm-mems{display:flex;gap:8px}
+  .tm-mem{width:84px;cursor:pointer;text-align:center}
+  .tm-mem img{width:72px;height:72px;border-radius:8px;display:block;margin:0 auto}
+  .tm-tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-top:3px;color:#fff;background:#888}
+  .tm-tag.t-dps{background:#c33}.tm-tag.t-own{background:var(--accent)}.tm-tag.t-friend{background:#d08a00}
+  .tm-nm{font-size:11px;line-height:1.25;margin-top:2px;max-height:2.5em;overflow:hidden}
+  table.tm-w{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  table.tm-w th,table.tm-w td{border-top:1px solid var(--line);padding:3px 4px;text-align:left;white-space:nowrap}
+  table.tm-w th{color:var(--sub);font-weight:400}
+  table.tm-w td.tm-plan{white-space:normal;color:var(--sub)}
+  .tm-ok{color:var(--ok);font-weight:700}.tm-ng{color:#c33;font-weight:700}
+  @media (max-width:600px){#teamOut{grid-template-columns:1fr;padding:8px}}
+  .msg{grid-column:1/-1;text-align:center;color:var(--sub);padding:40px 0}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:0 16px 30px}
+  footer a{color:var(--sub)}
+  .item .chk{width:30px;height:30px;right:3px;bottom:3px;font-size:17px}
+  .item .chk:hover{border-color:var(--ok)}
+  /* detail modal */
+  #dlg{position:fixed;inset:0;z-index:20;background:#000a;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 10px}
+  #dlg.on{display:flex}
+  body.lock{overflow:hidden}
+  .dbox{position:relative;background:var(--card);border-radius:14px;max-width:880px;width:100%;padding:18px 20px 22px;box-shadow:0 20px 50px #0008}
+  .dclose{position:absolute;right:10px;top:8px;border:none;background:none;font-size:28px;cursor:pointer;color:var(--sub);line-height:1}
+  .dhead{display:flex;gap:14px;align-items:center;padding-right:30px}
+  .dhead img{width:72px;height:72px;border-radius:8px}
+  .dhead h2{margin:0;font-size:20px}
+  .dhead .ruby{color:var(--sub);font-size:12px}
+  .dhead .meta{color:var(--sub);font-size:13px;margin-top:2px}
+  .down{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 4px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+  .down .np{visibility:visible;padding:0;gap:4px}
+  .down .np span{cursor:pointer;padding:4px 10px;font-size:13px}
+  .dcols{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px;margin-top:12px}
+  .dart img{width:100%;border-radius:8px;display:block;background:#0002;min-height:200px}
+  .dart .asc{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .dart .asc span{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+  .dart .asc span.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dbox h3{font-size:15px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .dcols h3:first-child{margin-top:0}
+  table.kv{border-collapse:collapse;font-size:13px;width:100%}
+  table.kv th,table.kv td{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+  table.kv th{background:#8881;white-space:nowrap;font-weight:600;width:1%}
+  .sk{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .sk:last-child{border-bottom:none}
+  .sk img{width:40px;height:40px;flex:none}
+  .sk .t{font-weight:600;font-size:14px}
+  .sk .t small{font-weight:400;color:var(--sub);margin-left:6px}
+  .sk .d{font-size:13px;margin-top:3px;white-space:pre-wrap}
+  .vals{font-size:12px;color:var(--sub);margin-top:4px;overflow-x:auto}
+  .vals table{border-collapse:collapse}
+  .vals td{border:1px solid var(--line);padding:1px 5px;white-space:nowrap}
+  .vals td:first-child{color:var(--text)}
+  .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;background:var(--accent);color:#fff;margin-left:6px;vertical-align:middle}
+  .card-q{color:#2a7de1;font-weight:700}.card-a{color:#1f9d55;font-weight:700}.card-b{color:#d33;font-weight:700}
+  .prof{font-size:13px;white-space:pre-wrap;line-height:1.6;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .prof .cond{display:block;color:var(--sub);font-size:12px}
+  details.older{margin:2px 0 6px 50px;font-size:13px}
+  details.older summary{cursor:pointer;color:var(--sub);font-size:12px}
+  details.older .sk{opacity:.8}
+  .dlink{color:var(--accent);cursor:pointer;text-decoration:underline}
+  .dfoot{margin-top:14px;font-size:12px;color:var(--sub)}
+  .dfoot a{color:var(--sub)}
+  @media (max-width:700px){.dcols{grid-template-columns:1fr}.dart{max-width:320px;margin:0 auto}#dlg{padding:0}.dbox{border-radius:0;min-height:100%}}
+  @media (max-width:600px){header{position:static}main{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}.item .nm{font-size:11px}}
+</style>
+<style>
+  .item .np span{font-size:11px}
+  .tg{display:flex;gap:3px;padding:0 4px 5px;visibility:hidden}
+  .item.own .tg{visibility:visible}
+  .tg span{flex:1;text-align:center;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:2px 0;color:var(--sub);cursor:pointer}
+  .tg span.on.r{background:#2a7de1;border-color:#2a7de1;color:#fff}
+  .tg span.on.o{background:#e0457b;border-color:#e0457b;color:#fff}
+  .tg span.na{visibility:hidden}
+  .item .rar{font-weight:700}
+  .r2{color:#bbb!important}.r3{color:#5aa9e6!important}.r4{color:#b77cf2!important}.r5{color:#f2c94c!important}.r6{color:#ff7b7b!important}
+  .dart img{background:none;min-height:0}
+  .down .tg{visibility:visible;padding:0}
+  .down .tg span{padding:4px 10px;font-size:13px}
+  .tm-mem{width:96px}
+  .tm-sec{font-size:13px;font-weight:700;margin:10px 0 4px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top">
+    <a class="back" href="../">← Portal</a>
+    <h1>アズールレーン 收藏管理（日服）</h1>
+    <span class="sp"></span>
+    <button class="btn" id="btnExport">匯出</button>
+    <button class="btn" id="btnImport">匯入</button>
+    <button class="btn" id="btnRefresh">更新資料</button>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-tab="ship">艦船</div>
+    <div class="tab" data-tab="team">簡易編成</div>
+  </div>
+  <div id="listCtl">
+    <div class="filters">
+      <input type="search" id="q" placeholder="艦名で検索">
+      <select id="fOwn">
+        <option value="all">全部</option>
+        <option value="own">持有</option>
+        <option value="not">未持有</option>
+        <option value="max">完全突破</option>
+        <option value="notmax">持有但未完全突破</option>
+        <option value="retro">可改造但未改造</option>
+        <option value="oath">誓約済</option>
+      </select>
+      <select id="fSort">
+        <option value="code">図鑑番號</option>
+        <option value="codeD">図鑑番號 ↓</option>
+        <option value="rar">稀有度 ↓</option>
+      </select>
+    </div>
+    <div class="chips" id="chipRar"></div>
+    <div class="chips" id="chipType"></div>
+    <div class="chips" id="chipNat"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div id="teamCtl" hidden>
+    <div class="filters">
+      <label>顯示陣營編成 <select id="tmNat"><option value="5" selected>前 5 陣營</option><option value="10">前 10 陣營</option><option value="0">只看總合</option></select></label>
+      <label><input type="checkbox" id="tmFullOnly"> 只用完全突破的艦</label>
+    </div>
+    <div class="stats" id="teamInfo"></div>
+  </div>
+</div></header>
+<main id="grid"><div class="msg">讀取資料中（首次約 8MB）…</div></main>
+<section id="teamOut" hidden></section>
+<div id="dlg"><div class="dbox"><button class="dclose" title="關閉">×</button><div id="dbody"></div></div></div>
+<footer>資料來自 <a href="https://github.com/AzurLaneTools/AzurLaneData" target="_blank" rel="noopener">AzurLaneTools/AzurLaneData</a>（日服），圖片來自 <a href="https://github.com/Fernando2603/AzurLane" target="_blank" rel="noopener">Fernando2603/AzurLane</a>，著作權屬 Manjuu / Yongshi / Yostar 所有。點圖片看詳細資料，點右下圓圈打勾持有。持有紀錄存在此瀏覽器，換裝置請用「匯出／匯入」。</footer>
+
+<script>
+const SRC = 'https://raw.githubusercontent.com/AzurLaneTools/AzurLaneData/main/JP/';
+const IMG = 'https://raw.githubusercontent.com/Fernando2603/AzurLane/main/images/skin/';
+const SAVE_KEY = 'al_jp_owned_v1';
+const CACHE_KEY = 'al_jp_data_v1';
+const RAR = {2:'N', 3:'R', 4:'SR', 5:'SSR', 6:'UR'};
+const RAR_RES = {5:'PR', 6:'DR'};
+const NAT = {1:'ユニオン', 2:'ロイヤル', 3:'重桜', 4:'鉄血', 5:'東煌', 6:'サディア', 7:'北方連合', 8:'アイリス', 9:'ヴィシア', 11:'オランダ', 96:'テンペスタ', 97:'META', 98:'ブリ'};
+const natName = n => NAT[n] || (n >= 101 ? 'コラボ' : 'その他');
+const natKey = n => NAT[n] ? String(n) : (n >= 101 ? 'collab' : 'other');
+const ARMOR = {1:'軽装甲', 2:'中装甲', 3:'重装甲'};
+const EQ = {1:'駆逐主砲', 2:'軽巡主砲', 3:'重巡主砲', 4:'戦艦主砲', 5:'魚雷', 6:'対空砲', 7:'戦闘機', 8:'雷撃機', 9:'爆撃機', 10:'設備', 11:'超巡主砲', 12:'水上機', 13:'潜水艦魚雷', 15:'対潜機', 18:'積載'};
+const ATTR = ['耐久','火力','雷装','対空','航空','装填',null,'命中','回避','速力','幸運','対潜'];
+
+let data = null;   // {ship:[], types:{}, time}
+let owned = {ship:{}};   // gid: {b:0..3, r:0|1, o:0|1}
+try{ const o = JSON.parse(localStorage.getItem(SAVE_KEY)); if (o && o.ship) owned = o; }catch(e){}
+const F = {r:new Set(), t:new Set(), n:new Set()};
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function saveOwned(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(owned)); }catch(e){ alert('儲存失敗：' + e.message); } }
+function rarName(x){ return (x.hb === 2 && RAR_RES[x.r]) || RAR[x.r] || x.r; }
+
+function lv100(st){ return st.attrs.map((a, i) => a + st.attrs_growth[i] * 99 / 1000); }
+function trim(grp, st, types, tr){
+  const trans = {};
+  Object.values(tr).forEach(t => { if (t && t.group_id) trans[t.group_id] = t.skin_id; });
+  const ty = {};
+  Object.values(types).forEach(t => { if (t && t.ship_type) ty[t.ship_type] = {name:String(t.type_name).trim(), team:t.team_type}; });
+  const ship = Object.values(grp).filter(g => g && g.group_type && !g.hide && st[g.group_type * 10 + 1]).map(g => {
+    const s1 = st[g.group_type * 10 + 1], s4 = st[g.group_type * 10 + 4] || s1;
+    return {id:g.group_type, code:g.code, idx:g.index_id, name:s1.name, r:s1.rarity, t:g.type, n:g.nationality, hb:g.handbook_type,
+            skin:s1.skin_id, rs:trans[g.group_type] || 0, armor:s4.armor_type, s:lv100(s4).map(v => Math.round(v))};
+  });
+  return {ship, types:ty, time:Date.now()};
+}
+async function fetchAll(){
+  const get = f => fetch(SRC + f, {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(f + ' HTTP ' + r.status); return r.json(); });
+  const [grp, st, types, tr] = await Promise.all(['ShareCfg/ship_data_group.json', 'sharecfgdata/ship_data_statistics.json', 'ShareCfg/ship_data_by_type.json', 'ShareCfg/ship_data_trans.json'].map(get));
+  rawCache.st = st;
+  const d = trim(grp, st, types, tr);
+  try{ localStorage.setItem(CACHE_KEY, JSON.stringify(d)); }catch(e){}
+  return d;
+}
+async function init(){
+  try{ data = JSON.parse(localStorage.getItem(CACHE_KEY)); }catch(e){ data = null; }
+  if (data){ buildChips(); render(); }
+  try{
+    const fresh = await fetchAll();
+    const changed = !data || fresh.ship.length !== data.ship.length;
+    data = fresh;
+    if (changed){ buildChips(); render(); }
+  }catch(err){
+    if (!data) document.getElementById('grid').innerHTML = '<div class="msg">資料讀取失敗：' + esc(err.message) + '<br>請確認網路後按「更新資料」。</div>';
+  }
+  if (!curDetail) routeHash();
+  if (location.hash === '#team') document.querySelector('.tab[data-tab="team"]').click();
+}
+
+function faceOf(x, retro){ return IMG + ((retro && x.rs) || x.skin) + '/icon.png'; }
+function typeName(t){ return (data.types[t] || {}).name || ('艦種' + t); }
+
+function buildChips(){
+  const list = data.ship;
+  const rs = [...new Set(list.map(x => x.r))].sort((a, b) => b - a);
+  document.getElementById('chipRar').innerHTML = rs.map(r => `<span class="chip${F.r.has(r) ? ' on' : ''}" data-k="r" data-v="${r}">${RAR[r]}</span>`).join('');
+  const ts = Object.keys(data.types).map(Number).filter(t => list.some(x => x.t === t));
+  document.getElementById('chipType').innerHTML = ts.map(t => `<span class="chip${F.t.has(t) ? ' on' : ''}" data-k="t" data-v="${t}">${esc(typeName(t))}</span>`).join('');
+  const ns = [...new Set(list.map(x => natKey(x.n)))];
+  const order = k => k === 'collab' ? 900 : k === 'other' ? 950 : +k;
+  ns.sort((a, b) => order(a) - order(b));
+  document.getElementById('chipNat').innerHTML = ns.map(k => `<span class="chip${F.n.has(k) ? ' on' : ''}" data-k="n" data-v="${k}">${k === 'collab' ? 'コラボ' : k === 'other' ? 'その他' : NAT[k]}</span>`).join('');
+}
+function O(id){ return owned.ship[id]; }
+function filtered(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const fo = document.getElementById('fOwn').value, so = document.getElementById('fSort').value;
+  const list = data.ship.filter(x => {
+    if (F.r.size && !F.r.has(x.r)) return false;
+    if (F.t.size && !F.t.has(x.t)) return false;
+    if (F.n.size && !F.n.has(natKey(x.n))) return false;
+    if (q && !x.name.toLowerCase().includes(q)) return false;
+    const v = O(x.id);
+    if (fo === 'own' && !v) return false;
+    if (fo === 'not' && v) return false;
+    if (fo === 'max' && !(v && v.b === 3)) return false;
+    if (fo === 'notmax' && !(v && v.b < 3)) return false;
+    if (fo === 'retro' && !(v && x.rs && !v.r)) return false;
+    if (fo === 'oath' && !(v && v.o)) return false;
+    return true;
+  });
+  if (so === 'codeD') list.sort((a, b) => b.code - a.code);
+  else if (so === 'rar') list.sort((a, b) => b.r - a.r || a.code - b.code);
+  else list.sort((a, b) => a.code - b.code);
+  return list;
+}
+function ctlHTML(x, v, attr){
+  const np = [0,1,2,3].map(n => `<span ${attr}-b="${n}" class="${v && v.b === n ? 'on' : ''}" title="突破 ${n}">${n === 0 ? '0' : '★' + n}</span>`).join('');
+  const tg = `<span ${attr}-t="r" class="r${x.rs ? '' : ' na'}${v && v.r ? ' on' : ''}" title="改造">改造</span><span ${attr}-t="o" class="o${v && v.o ? ' on' : ''}" title="誓約">誓約</span>`;
+  return [np, tg];
+}
+function cardHTML(x){
+  const v = O(x.id), [np, tg] = ctlHTML(x, v, 'data');
+  return `<div class="item${v ? ' own' : ''}${v && v.b === 3 ? ' np5' : ''}" data-id="${x.id}">
+    <div class="img"><img loading="lazy" src="${faceOf(x, v && v.r)}" alt="" onerror="this.style.visibility='hidden'"><span class="no">No.${x.code}</span><span class="rar r${x.r}">${rarName(x)}</span><span class="chk">✓</span></div>
+    <div class="nm" title="${esc(x.name)}">${esc(x.name)}</div>
+    <div class="cls">${esc(typeName(x.t))}・${esc(natName(x.n))}</div>
+    <div class="np">${np}</div><div class="tg">${tg}</div></div>`;
+}
+function render(){
+  if (!data) return;
+  const list = filtered();
+  document.getElementById('grid').innerHTML = list.length ? list.map(cardHTML).join('') : '<div class="msg">沒有符合的項目</div>';
+  renderStats(list.length);
+}
+function renderStats(shown){
+  const list = data.ship, own = list.filter(x => O(x.id));
+  let h = `<span>持有 <b>${own.length}</b> / ${list.length}（${(own.length / list.length * 100).toFixed(1)}%）</span>`;
+  h += `<span>完全突破 <b>${own.filter(x => O(x.id).b === 3).length}</b></span>`;
+  h += `<span>改造 <b>${own.filter(x => O(x.id).r).length}</b> / ${own.filter(x => x.rs).length}</span>`;
+  h += `<span>誓約 <b>${own.filter(x => O(x.id).o).length}</b></span><span>顯示中 ${shown}</span>`;
+  if (data.time) h += `<span>資料：${new Date(data.time).toLocaleString()}</span>`;
+  document.getElementById('stats').innerHTML = h;
+}
+function setOwn(id, v){
+  if (v) owned.ship[id] = v; else delete owned.ship[id];
+  saveOwned();
+  const el = document.querySelector(`#grid .item[data-id="${id}"]`);
+  if (el){ const tmp = document.createElement('div'); tmp.innerHTML = cardHTML(data.ship.find(x => x.id === id)); el.replaceWith(tmp.firstElementChild); }
+  renderStats(document.querySelectorAll('#grid .item').length);
+}
+function applyCtl(id, el, attr){
+  const v = O(id); if (!v) return false;
+  const b = el.closest(`[${attr}-b]`), t = el.closest(`[${attr}-t]`);
+  if (b){ setOwn(id, {...v, b:+b.getAttribute(attr + '-b')}); return true; }
+  if (t && !t.classList.contains('na')){ const k = t.getAttribute(attr + '-t'); setOwn(id, {...v, [k]: v[k] ? 0 : 1}); return true; }
+  return !!t;
+}
+document.getElementById('grid').addEventListener('click', ev => {
+  const el = ev.target.closest('.item'); if (!el) return;
+  const id = +el.dataset.id;
+  if (applyCtl(id, ev.target, 'data')) return;
+  if (ev.target.closest('.np,.tg')) return;
+  if (ev.target.closest('.chk')) setOwn(id, O(id) ? 0 : {b:0, r:0, o:0});
+  else { pushedHash = true; location.hash = 'ship-' + id; }
+});
+
+/* ===== 詳細資料 ===== */
+const rawCache = {};
+async function raw(name, file){
+  if (!rawCache[name]) rawCache[name] = await fetch(SRC + file).then(r => { if (!r.ok) throw new Error(file + ' HTTP ' + r.status); return r.json(); });
+  return rawCache[name];
+}
+let curDetail = null, pushedHash = false;
+function ownBarHTML(x){
+  const v = O(x.id);
+  let h = `<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600"><input type="checkbox" id="downChk" ${v ? 'checked' : ''}> 持有</label>`;
+  if (v){ const [np, tg] = ctlHTML(x, v, 'data-d'); h += `<div class="np">${np}</div><div class="tg">${tg}</div>`; }
+  return h;
+}
+function headHTML(x){
+  return `<div class="dhead"><img src="${faceOf(x, O(x.id) && O(x.id).r)}" alt="" onerror="this.style.visibility='hidden'"><div>
+    <h2>No.${x.code} ${esc(x.name)}</h2>
+    <div class="meta"><span class="r${x.r}" style="font-weight:700">${rarName(x)}</span>｜${esc(typeName(x.t))}｜${esc(natName(x.n))}｜${ARMOR[x.armor] || ''}${x.rs ? '｜改造あり' : ''}</div></div></div>
+    <div class="down" id="down">${ownBarHTML(x)}</div>`;
+}
+function fmtSkill(sk){
+  let s = esc(sk.desc || '');
+  (sk.desc_get_add || []).forEach((a, i) => {
+    const v = a.length > 1 && a[0] !== a[a.length - 1] ? `${a[0]}（Lv.${sk.max_level || 10}：${a[a.length - 1]}）` : a[0];
+    s = s.split('$' + (i + 1)).join(`<span class="hl">${esc(v)}</span>`);
+  });
+  return s.replace(/&lt;color=#[0-9a-fA-F]+&gt;/g, '<span style="color:var(--sub)">').replace(/&lt;\/color&gt;/g, '</span>');
+}
+function shipHTML(x, st, tpl, sk, bo, grp, tr){
+  const s4 = st[x.id * 10 + 4] || st[x.id * 10 + 1], t4 = tpl[x.id * 10 + 4] || tpl[x.id * 10 + 1];
+  const at = lv => s4.attrs.map((a, i) => a + s4.attrs_growth[i] * (Math.min(lv, 100) - 1) / 1000 + (lv > 100 ? (s4.attrs_growth_extra[i] || 0) * (lv - 100) / 1000 : 0));
+  const a100 = at(100), a120 = at(120);
+  const rows = ATTR.map((n, i) => n ? `<tr><th>${n}</th><td>${Math.round(s4.attrs[i])}</td><td>${Math.round(a100[i])}</td><td>${Math.round(a120[i])}</td></tr>` : '').join('');
+  const v = O(x.id);
+  let h = `<div class="dcols"><div class="dart"><img src="${IMG}${(v && v.r && x.rs) || x.skin}/painting.png" alt="" onerror="this.src='${IMG}${x.skin}/shipyard.png'"></div><div>
+    <h3>能力値（完全突破）</h3><table class="kv"><tr><th></th><th>Lv.1</th><th>Lv.100</th><th>Lv.120</th></tr>${rows}</table>
+    <p style="font-size:12px;color:var(--sub);margin:4px 0 0">不含好感度、科技、改造與裝備加成。</p>`;
+  if (t4){
+    const eff = s4.equipment_proficiency || [];
+    h += '<h3>裝備欄</h3><table class="kv">' + [1,2,3].map(i => `<tr><th>欄位 ${i}</th><td>${(t4['equip_' + i] || []).map(e => EQ[e] || ('類型' + e)).join('／')}</td><td>${eff[i - 1] != null ? Math.round(eff[i - 1] * 100) + '%' : ''}</td></tr>`).join('') + '</table>';
+  }
+  h += '</div></div>';
+  const ids = t4 ? (t4.buff_list_display || t4.buff_list || []) : [];
+  if (ids.length) h += '<h3>スキル</h3>' + ids.map(id => sk[id]).filter(Boolean).map(s => `<div class="sk"><div style="flex:1;min-width:0"><div class="t">${esc(s.name)}</div><div class="d">${fmtSkill(s)}</div></div></div>`).join('');
+  const trans = Object.values(tr).find(t => t && t.group_id === x.id);
+  if (trans && trans.skill_id && sk[trans.skill_id]){ const s = sk[trans.skill_id]; h += `<h3>改造スキル</h3><div class="sk"><div style="flex:1;min-width:0"><div class="t">${esc(s.name)}</div><div class="d">${fmtSkill(s)}</div></div></div>`; }
+  const bs = [1,2,3].map(i => bo[x.id * 10 + i]).filter(Boolean);
+  if (bs.length) h += '<h3>限界突破</h3><table class="kv">' + bs.map((b, i) => `<tr><th>★${i + 1}</th><td>${esc(b.breakout_view || '')}</td></tr>`).join('') + '</table>';
+  const g = Object.values(grp).find(gg => gg && gg.group_type === x.id);
+  if (g && g.description && g.description.length) h += '<h3>入手方法</h3><div class="prof">' + g.description.map(d => esc(Array.isArray(d) ? d[0] : d)).join('\n') + '</div>';
+  h += `<div class="dfoot">更多資料：<a href="https://wikiwiki.jp/azurlane/${encodeURIComponent(x.name)}" target="_blank" rel="noopener">アズールレーン 攻略 Wiki</a></div>`;
+  return h;
+}
+async function openDetail(id){
+  const x = data && data.ship.find(s => s.id === id);
+  if (!x){ closeDetail(); return; }
+  curDetail = {id};
+  document.getElementById('dlg').classList.add('on');
+  document.body.classList.add('lock');
+  const body = document.getElementById('dbody');
+  body.innerHTML = headHTML(x) + '<p style="color:var(--sub)">讀取詳細資料中（首次約 15MB）…</p>';
+  let parts;
+  try{
+    parts = await Promise.all([raw('st', 'sharecfgdata/ship_data_statistics.json'), raw('tpl', 'sharecfgdata/ship_data_template.json'),
+      raw('sk', 'ShareCfg/skill_data_template.json'), raw('bo', 'sharecfgdata/ship_data_breakout.json'), raw('grp', 'ShareCfg/ship_data_group.json'), raw('tr', 'ShareCfg/ship_data_trans.json')]);
+  }catch(err){ if (curDetail && curDetail.id === id) body.innerHTML = headHTML(x) + `<p>詳細資料讀取失敗：${esc(err.message)}</p>`; return; }
+  if (!curDetail || curDetail.id !== id) return;
+  body.innerHTML = headHTML(x) + shipHTML(x, ...parts);
+  document.getElementById('dlg').scrollTop = 0;
+}
+function closeDetail(){ curDetail = null; document.getElementById('dlg').classList.remove('on'); document.body.classList.remove('lock'); }
+function hideDetail(){
+  if (pushedHash){ pushedHash = false; history.back(); }
+  else { history.replaceState(null, '', location.pathname + location.search); closeDetail(); }
+}
+function routeHash(){
+  const m = location.hash.match(/^#ship-(\d+)$/);
+  if (m && data) openDetail(+m[1]); else closeDetail();
+}
+window.addEventListener('hashchange', routeHash);
+document.querySelector('.dclose').addEventListener('click', hideDetail);
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && curDetail) hideDetail(); });
+document.getElementById('dlg').addEventListener('click', ev => {
+  if (ev.target.id === 'dlg'){ hideDetail(); return; }
+  if (curDetail && applyCtl(curDetail.id, ev.target, 'data-d')) document.getElementById('down').innerHTML = ownBarHTML(data.ship.find(s => s.id === curDetail.id));
+});
+document.getElementById('dlg').addEventListener('change', ev => {
+  if (ev.target.id === 'downChk' && curDetail){
+    setOwn(curDetail.id, ev.target.checked ? {b:0, r:0, o:0} : 0);
+    document.getElementById('down').innerHTML = ownBarHTML(data.ship.find(s => s.id === curDetail.id));
+  }
+});
+
+/* ===== 分頁、篩選、匯出入 ===== */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  const isTeam = t.dataset.tab === 'team';
+  document.getElementById('listCtl').hidden = isTeam;
+  document.getElementById('grid').hidden = isTeam;
+  document.getElementById('teamCtl').hidden = !isTeam;
+  document.getElementById('teamOut').hidden = !isTeam;
+  window.scrollTo(0, 0);
+  if (isTeam){ if (data) TEAM.render(); }
+  else if (data) render();
+}));
+document.querySelectorAll('#listCtl .chips').forEach(box => box.addEventListener('click', ev => {
+  const c = ev.target.closest('.chip'); if (!c) return;
+  const k = c.dataset.k, v = k === 'n' ? c.dataset.v : +c.dataset.v;
+  F[k].has(v) ? F[k].delete(v) : F[k].add(v);
+  c.classList.toggle('on'); render();
+}));
+let qTimer;
+document.getElementById('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(render, 150); });
+document.getElementById('fOwn').addEventListener('change', render);
+document.getElementById('fSort').addEventListener('change', render);
+document.getElementById('btnRefresh').addEventListener('click', async () => {
+  const b = document.getElementById('btnRefresh');
+  b.disabled = true; b.textContent = '更新中…';
+  try{ data = await fetchAll(); buildChips(); render(); b.textContent = '已更新'; }
+  catch(err){ alert('更新失敗：' + err.message); }
+  setTimeout(() => { b.disabled = false; b.textContent = '更新資料'; }, 1500);
+});
+document.getElementById('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({game:'azurlane', server:'JP', version:1, exported:new Date().toISOString(), ship:owned.ship}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'al_jp_owned_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try{
+    const o = JSON.parse(await f.text());
+    if (!o.ship) throw new Error('格式不符');
+    if (!confirm(`匯入 ${Object.keys(o.ship).length} 艘艦船，會覆蓋目前紀錄，確定？`)) return;
+    owned = {ship:o.ship}; saveOwned(); render();
+  }catch(err){ alert('匯入失敗：' + err.message); }
+  ev.target.value = '';
+});
+</script>
+<script src="team.js"></script>
+<script>TEAM.init(); init();</script>
+</body>
+</html>
