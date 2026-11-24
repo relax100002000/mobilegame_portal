@@ -206,6 +206,8 @@
 
 <script src="yaml.js"></script>
 <script src="img.js"></script>
+<script src="art.js"></script>
+<script src="desc.js"></script>
 <script>
 const MD = 'https://raw.githubusercontent.com/vertesan/gakumasu-diff/main/';
 const SAVE_KEY = 'gkms_owned_v1';
@@ -228,6 +230,7 @@ function idolImg(x){
   const k = nz(x.title + x.cname), I = window.GK_IMG || {i:{}, t:{}};
   return I.i[k] ? G8(I.i[k]) : I.t[k] ? TOOLS(I.t[k]) : '';
 }
+function idolArt(x){ return ((window.GK_ART || {})[x.id] || []).map(k => 'https://cdn.gamerch.com/contents/wiki/4990/entry/' + k); }
 function supImg(s){ const I = window.GK_IMG || {s:{}}; const p = I.s[nz(s.name)]; return p ? G8(p) : ''; }
 function imgTag(src, alt, big){ return src ? `<img loading="lazy" src="${src}" alt=""${big ? ` data-big="${big}"` : ''}>` : `<span class="noimg">${esc(alt)}</span>`; }
 
@@ -379,7 +382,7 @@ function filtered(){
 function idolCard(x){
   const v = owned.i[x.id] || 0;
   return `<div class="item${v ? ' own' : ''}${v >= 5 ? ' np5' : ''}" data-id="${x.id}" data-k="i">
-    <div class="img">${imgTag(idolImg(x), x.title)}<span class="rar ${x.r}">${x.r}</span>
+    <div class="img">${imgTag(idolImg(x), x.title, idolArt(x)[0])}<span class="rar ${x.r}">${x.r}</span>
       <span class="tags"><span class="pl pl-${x.plan}">${PLAN[x.plan]}</span></span><span class="chk">✓</span></div>
     <div class="nm" title="${esc(x.title)}">${esc(x.cname)}</div>
     <div class="cls" title="${esc(x.title)}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.title)}</div>
@@ -441,10 +444,16 @@ function headHTML(k, x){
     <div class="meta">${x.r}｜${k === 's' ? `<span class="ty ty-${x.type}">${STYPE[x.type]}</span>｜` : ''}<span class="pl pl-${x.plan}">${PLAN[x.plan]}</span>${k === 'i' ? '｜' + esc(EXAM[x.ex] || x.ex) : ''}${x.lim ? '｜限定' : ''}${x.vst ? '｜' + new Date(x.vst).toLocaleDateString() : ''}</div></div></div>
     <div class="down" id="down">${ownBarHTML(k, x)}</div>`;
 }
+function descBlock(t, arr){
+  if (!arr || !arr.length) return '';
+  return `<h3>${t}</h3>` + arr.map((c, i) => `<div class="sk"><div><div class="t">${esc(c.n)}${c.cat ? `<small>${esc(c.cat)}</small>` : ''}${c.st !== undefined ? `<small>体力 ${c.fst ? c.fst + '（固定）' : c.st}</small>` : ''}${i ? '<span class="tag">強化</span>' : ''}</div><div class="d">${esc(c.d)}</div></div></div>`).join('');
+}
 function idolDetail(x){
-  const img = idolImg(x);
-  const tot = x.st.reduce((a, b) => a + b, 0);
-  return `<div class="dcols"><div class="dart">${img ? `<img src="${img}" alt="">` : '<p style="color:var(--sub)">（沒有圖片）</p>'}</div><div>
+  const img = idolImg(x), art = idolArt(x), ai = Math.min(curDetail.art || 0, Math.max(art.length - 1, 0));
+  const tot = x.st.reduce((a, b) => a + b, 0), D = ((window.GK_DESC || {}).i || {})[x.id] || {}, P = ((window.GK_DESC || {}).p || {})[x.cid] || [];
+  const main = art[ai] || img;
+  return `<div class="dcols"><div class="dart">${main ? `<img id="dimg" src="${main}" alt="">` : '<p style="color:var(--sub)">（沒有圖片）</p>'}
+      ${art.length > 1 ? `<div class="asc">${art.map((u, i) => `<span data-art="${i}" class="${i === ai ? 'on' : ''}">${['覚醒前', '覚醒後'][i] || 'イラスト' + (i + 1)}</span>`).join('')}</div>` : ''}</div><div>
     <h3>初期パラメータ</h3>
     <table class="kv"><tr><th></th><th>ボーカル</th><th>ダンス</th><th>ビジュアル</th><th>合計</th><th>体力</th></tr>
       <tr><th>初期</th>${x.st.map(n => `<td>${n}</td>`).join('')}<td>${tot}</td><td>${x.hp}</td></tr>
@@ -452,7 +461,11 @@ function idolDetail(x){
     <table class="kv" style="margin-top:8px"><tr><th>プラン</th><td><span class="pl pl-${x.plan}">${PLAN[x.plan]}</span></td></tr>
       <tr><th>おすすめ効果</th><td>${esc(EXAM[x.ex] || x.ex)}</td></tr><tr><th>得意</th><td>${['ボーカル', 'ダンス', 'ビジュアル'].filter((_, i) => x.gr[i] === Math.max(...x.gr)).join('・')}</td></tr>
       <tr><th>入手</th><td>${x.lim ? '限定' : '通常'}</td></tr><tr><th>ID</th><td>${esc(x.id)}</td></tr></table>
-    </div></div><div class="dfoot">固有スキルカード・Pアイテム等請見 game8／gakumas-tools；本頁只收 masterdata 的基本數值。</div>`;
+    ${descBlock('固有スキルカード', D.card)}${descBlock('固有スキルカード 2', D.card2)}${descBlock('固有Pアイテム', D.it)}
+    </div></div>
+    ${P.length ? `<h3>プロフィール・${esc(x.cname)}</h3><table class="kv">${P.filter(r => r[0] !== '紹介').reduce((a, r, i, A) => a + (i % 2 ? '' : '<tr>') + `<th>${esc(r[0])}</th><td>${esc(r[1])}</td>` + (i % 2 || i === A.length - 1 ? '</tr>' : ''), '')}</table>
+      ${P.filter(r => r[0] === '紹介').map(r => `<div class="prof">${esc(r[1])}</div>`).join('')}` : ''}
+    <div class="dfoot">數值・スキル・プロフィール：masterdata（vertesan/gakumasu-diff）；カードイラスト：<a href="https://gamerch.com/gakumasu/850392" target="_blank" rel="noopener">学マスWiki（Gamerch）</a>。</div>`;
 }
 function supDetail(s){
   const img = supImg(s), v = owned.s[s.id] || 0, lb = v ? v - 1 : 4;
@@ -500,6 +513,8 @@ document.getElementById('dlg').addEventListener('click', ev => {
   if (ev.target.id === 'dlg'){ hideDetail(); return; }
   const np = ev.target.closest('[data-dnp]');
   if (np && curDetail){ setOwn(curDetail.k, curDetail.id, +np.dataset.dnp); repaintKeep(); }
+  const ar = ev.target.closest('[data-art]');
+  if (ar && curDetail){ curDetail.art = +ar.dataset.art; repaintKeep(); }
 });
 document.getElementById('dlg').addEventListener('change', ev => {
   if (ev.target.id === 'downChk' && curDetail){ setOwn(curDetail.k, curDetail.id, ev.target.checked ? 1 : 0); repaintKeep(); }

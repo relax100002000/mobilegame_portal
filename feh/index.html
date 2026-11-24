@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>聖火降魔錄 英雄雲集 收藏管理</title>
+<style>
+  :root{--bg:#f3f4f8;--card:#fff;--text:#1d2130;--sub:#6b7085;--line:#e3e5ee;--accent:#4a5cff;--ok:#1f9d55;--gold:#d4a017}
+  @media (prefers-color-scheme: dark){:root{--bg:#14161d;--card:#1f2230;--text:#eceef5;--sub:#9aa0b5;--line:#2e3244;--accent:#8c98ff;--ok:#3ccf7a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+  .wrap{max-width:1300px;margin:0 auto;padding:10px 14px}
+  .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .top h1{margin:0;font-size:20px}
+  .top a.back{color:var(--sub);text-decoration:none;font-size:14px}
+  .top .sp{flex:1}
+  button,select,input{font:inherit;color:var(--text)}
+  .btn{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
+  .btn:hover{border-color:var(--accent)}
+  .tabs{display:flex;gap:6px;margin-top:10px}
+  .tab{padding:7px 16px;border-radius:8px 8px 0 0;border:1px solid var(--line);border-bottom:none;background:var(--card);cursor:pointer;font-weight:600;color:var(--sub)}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+  .filters input[type=search]{flex:1;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .filters select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .chip{padding:3px 9px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer;font-size:12px;user-select:none}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .stats{margin-top:8px;font-size:13px;color:var(--sub);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .stats b{color:var(--text)}
+  main{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .item{position:relative;background:var(--card);border:2px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;user-select:none}
+  .item .img{position:relative;aspect-ratio:1/1;background:#0002}
+  .item img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1);opacity:.45;transition:.15s}
+  .item.own{border-color:var(--ok)}
+  .item.own img{filter:none;opacity:1}
+  .item .no{position:absolute;left:4px;top:4px;background:#000a;color:#fff;font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .rar{position:absolute;right:4px;top:4px;background:#000a;color:var(--gold);font-size:11px;padding:1px 5px;border-radius:5px}
+  .item .chk{position:absolute;right:4px;bottom:4px;width:24px;height:24px;border-radius:50%;background:#fffc;border:2px solid #888;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:transparent}
+  .item.own .chk{background:var(--ok);border-color:#fff;color:#fff}
+  .item .nm{font-size:12px;line-height:1.3;padding:4px 5px 2px;height:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .item .cls{font-size:11px;color:var(--sub);padding:0 5px}
+  .np{display:flex;gap:2px;padding:4px 4px 5px;visibility:hidden}
+  .item.own .np{visibility:visible}
+  .np span{flex:1;text-align:center;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:2px 0;color:var(--sub)}
+  .np span.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+  .np span.mlb{flex:1}
+  .item.np5 .np span.on{background:var(--gold);border-color:var(--gold)}
+  main[hidden],#teamOut[hidden]{display:none}
+  .filters label{font-size:13px;color:var(--sub);display:flex;align-items:center;gap:5px}
+  #teamOut{max-width:1300px;margin:0 auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:12px}
+  .tm-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .tm-head{font-size:13px;display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .tm-b{font-size:12px;padding:2px 8px;border-radius:6px;color:#fff;font-weight:600}
+  .tm-b.ok{background:var(--ok)}.tm-b.mid{background:#d08a00}.tm-b.ng{background:#c33}
+  .tm-mems{display:flex;gap:8px}
+  .tm-mem{width:84px;cursor:pointer;text-align:center}
+  .tm-mem img{width:72px;height:72px;border-radius:8px;display:block;margin:0 auto}
+  .tm-tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-top:3px;color:#fff;background:#888}
+  .tm-tag.t-dps{background:#c33}.tm-tag.t-own{background:var(--accent)}.tm-tag.t-friend{background:#d08a00}
+  .tm-nm{font-size:11px;line-height:1.25;margin-top:2px;max-height:2.5em;overflow:hidden}
+  table.tm-w{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+  table.tm-w th,table.tm-w td{border-top:1px solid var(--line);padding:3px 4px;text-align:left;white-space:nowrap}
+  table.tm-w th{color:var(--sub);font-weight:400}
+  table.tm-w td.tm-plan{white-space:normal;color:var(--sub)}
+  .tm-ok{color:var(--ok);font-weight:700}.tm-ng{color:#c33;font-weight:700}
+  @media (max-width:600px){#teamOut{grid-template-columns:1fr;padding:8px}}
+  .msg{grid-column:1/-1;text-align:center;color:var(--sub);padding:40px 0}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:0 16px 30px}
+  footer a{color:var(--sub)}
+  .item .chk{width:30px;height:30px;right:3px;bottom:3px;font-size:17px}
+  .item .chk:hover{border-color:var(--ok)}
+  /* detail modal */
+  #dlg{position:fixed;inset:0;z-index:20;background:#000a;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 10px}
+  #dlg.on{display:flex}
+  body.lock{overflow:hidden}
+  .dbox{position:relative;background:var(--card);border-radius:14px;max-width:880px;width:100%;padding:18px 20px 22px;box-shadow:0 20px 50px #0008}
+  .dclose{position:absolute;right:10px;top:8px;border:none;background:none;font-size:28px;cursor:pointer;color:var(--sub);line-height:1}
+  .dhead{display:flex;gap:14px;align-items:center;padding-right:30px}
+  .dhead img{width:72px;height:72px;border-radius:8px}
+  .dhead h2{margin:0;font-size:20px}
+  .dhead .ruby{color:var(--sub);font-size:12px}
+  .dhead .meta{color:var(--sub);font-size:13px;margin-top:2px}
+  .down{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 4px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+  .down .np{visibility:visible;padding:0;gap:4px}
+  .down .np span{cursor:pointer;padding:4px 10px;font-size:13px}
+  .dcols{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px;margin-top:12px}
+  .dart img{width:100%;border-radius:8px;display:block;background:#0002;min-height:200px}
+  .dart .asc{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .dart .asc span{font-size:12px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+  .dart .asc span.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dbox h3{font-size:15px;margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+  .dcols h3:first-child{margin-top:0}
+  table.kv{border-collapse:collapse;font-size:13px;width:100%}
+  table.kv th,table.kv td{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+  table.kv th{background:#8881;white-space:nowrap;font-weight:600;width:1%}
+  .sk{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .sk:last-child{border-bottom:none}
+  .sk img{width:40px;height:40px;flex:none}
+  .sk .t{font-weight:600;font-size:14px}
+  .sk .t small{font-weight:400;color:var(--sub);margin-left:6px}
+  .sk .d{font-size:13px;margin-top:3px;white-space:pre-wrap}
+  .vals{font-size:12px;color:var(--sub);margin-top:4px;overflow-x:auto}
+  .vals table{border-collapse:collapse}
+  .vals td{border:1px solid var(--line);padding:1px 5px;white-space:nowrap}
+  .vals td:first-child{color:var(--text)}
+  .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;background:var(--accent);color:#fff;margin-left:6px;vertical-align:middle}
+  .card-q{color:#2a7de1;font-weight:700}.card-a{color:#1f9d55;font-weight:700}.card-b{color:#d33;font-weight:700}
+  .prof{font-size:13px;white-space:pre-wrap;line-height:1.6;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .prof .cond{display:block;color:var(--sub);font-size:12px}
+  details.older{margin:2px 0 6px 50px;font-size:13px}
+  details.older summary{cursor:pointer;color:var(--sub);font-size:12px}
+  details.older .sk{opacity:.8}
+  .dlink{color:var(--accent);cursor:pointer;text-decoration:underline}
+  .dfoot{margin-top:14px;font-size:12px;color:var(--sub)}
+  .dfoot a{color:var(--sub)}
+  @media (max-width:700px){.dcols{grid-template-columns:1fr}.dart{max-width:320px;margin:0 auto}#dlg{padding:0}.dbox{border-radius:0;min-height:100%}}
+  @media (max-width:600px){header{position:static}main{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}.item .nm{font-size:11px}}
+</style>
+<style>
+  .item .img{background:#26283a}
+  .wc{position:absolute;left:3px;bottom:3px;font-size:10px;font-weight:700;color:#fff;border-radius:4px;padding:0 4px;line-height:16px}
+  .c-紅{background:#d23c3c}.c-藍{background:#2f6fd8}.c-綠{background:#2a9a4a}.c-無{background:#7a7f8c}
+  .mv{position:absolute;left:3px;top:3px;font-size:10px;background:#000a;color:#fff;border-radius:4px;padding:0 4px;line-height:16px}
+  .item .rar{font-size:10px;color:#f7c948}
+  .item .cs{font-size:11px;color:var(--sub);padding:0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .nm{height:auto;-webkit-line-clamp:1;padding-bottom:0}
+  .np select{flex:1;min-width:0;font-size:11px;padding:0;border:1px solid var(--line);border-radius:4px;background:var(--card)}
+  .pr{display:inline-block;font-size:10.5px;border-radius:4px;padding:0 5px;line-height:16px;color:#fff;background:#8a6d3b;margin:1px}
+  .pr-legendary,.pr-mythic{background:#c08a00}.pr-duo,.pr-harmonized{background:#b0477a}.pr-rearmed,.pr-attuned{background:#5a5ad0}.pr-ascended{background:#3a9a8a}.pr-emblem,.pr-chosen{background:#a04040}
+  .down select{font-size:13px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+  .down label{font-size:13px;display:flex;align-items:center;gap:4px}
+  table.st td,table.st th{text-align:center}
+  table.st td.up{color:#1f7ad8;font-weight:700}table.st td.dn{color:#d33;font-weight:700}
+  .skc{font-size:11px;color:#fff;background:#666;border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:middle}
+  .sk .t small.en{font-style:italic}
+  .sk.fin .t{color:var(--accent)}
+  .rf{margin:4px 0 0;padding:6px 8px;border-left:3px solid #c08a00;background:#c08a0011;font-size:12.5px;white-space:pre-wrap}
+  .tm-mem img{object-fit:cover;background:#26283a}
+  .tm-mems{flex-wrap:wrap}
+  .tm-card.main{grid-column:1/-1}
+  #teamInfo{display:block;line-height:1.7}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top">
+    <a class="back" href="../">← Portal</a>
+    <h1>聖火降魔錄 英雄雲集 收藏管理</h1>
+    <span class="sp"></span>
+    <button class="btn" id="btnExport">匯出</button>
+    <button class="btn" id="btnImport">匯入</button>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  </div>
+  <div class="tabs">
+    <div class="tab on" data-tab="list">英雄</div>
+    <div class="tab" data-tab="team">組隊推薦</div>
+  </div>
+  <div id="listCtl">
+    <div class="filters">
+      <input type="search" id="q" placeholder="搜尋英雄名／稱號（中文或英文）">
+      <select id="fOwn">
+        <option value="all">全部</option>
+        <option value="own">持有</option>
+        <option value="not">未持有</option>
+        <option value="m10">+10</option>
+        <option value="notm10">持有但未 +10</option>
+      </select>
+      <select id="fSort">
+        <option value="new">實裝 新→舊</option>
+        <option value="old">實裝 舊→新</option>
+        <option value="bst">能力總和 ↓</option>
+        <option value="mg">凸數 ↓</option>
+        <option value="name">名稱</option>
+      </select>
+    </div>
+    <div class="chips" id="chipC"></div>
+    <div class="chips" id="chipP"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div id="teamCtl" hidden>
+    <div class="filters">
+      <label>方針 <select id="tmMode">
+        <option value="color">四色均衡（紅藍綠無各 1）</option>
+        <option value="free">不限顏色（分數最高 4 人）</option>
+      </select></label>
+      <label>兵種 <select id="tmMv"><option value="">不限</option><option value="Infantry">步行隊</option><option value="Cavalry">騎馬隊</option><option value="Flying">飛行隊</option><option value="Armored">重甲隊</option></select></label>
+      <label><input type="checkbox" id="tmRef"> 至少 1 名再動（舞者／歌者）</label>
+    </div>
+    <div class="stats" id="teamInfo"></div>
+  </div>
+</div></header>
+<main id="grid"><div class="msg">讀取資料中…</div></main>
+<section id="teamOut" hidden></section>
+<div id="dlg"><div class="dbox"><button class="dclose" title="關閉">×</button><div id="dbody"></div></div></div>
+<footer>資料與圖片來自 <a href="https://feheroes.fandom.com/" target="_blank" rel="noopener">Fire Emblem Heroes Wiki（Fandom）</a>的靜態快照（<span id="snap"></span>），英雄名、稱號、技能名用官方繁中，技能效果為英文原文；新英雄需手動更新。著作權屬 Nintendo / Intelligent Systems 所有。點圖片看詳細資料，點右下圓圈打勾持有，下方選凸數與神龍之花；資質、祝福在詳細資料裡設定。持有紀錄存在此瀏覽器，換裝置請用「匯出／匯入」。</footer>
+
+<script src="data/list.js"></script>
+<script>
+const IMG = 'https://static.wikia.nocookie.net/feheroes_gamepedia_en/images/';
+const WIKI = 'https://feheroes.fandom.com/wiki/';
+const SAVE_KEY = 'feh_owned_v1';
+const STAT = ['HP', '攻擊', '速度', '防守', '魔防'];
+const COLOR = {Red:'紅', Blue:'藍', Green:'綠', Colorless:'無'};
+const WKIND = {Sword:'劍', Lance:'槍', Axe:'斧', Tome:'魔', Bow:'弓', Dagger:'暗器', Staff:'杖', Breath:'龍', Beast:'獸'};
+const MV = {Infantry:'步行', Cavalry:'騎馬', Flying:'飛行', Armored:'重甲'};
+const PR = {legendary:'傳承', mythic:'神階', duo:'比翼', harmonized:'雙界', rearmed:'魔器', ascended:'開花', attuned:'響心', emblem:'紋章士', aide:'援護', entwined:'縁結', chosen:'神選', special:'超英雄', brave:'總選舉', fallen:'闇墮', resplendent:'神裝', limited:'限定', ghb:'大英雄戰', tempest:'戰渦', refresher:'再動'};
+const PR_CHIP = ['legendary', 'mythic', 'duo', 'harmonized', 'rearmed', 'ascended', 'attuned', 'emblem', 'chosen', 'brave', 'special', 'resplendent', 'refresher'];
+const BLESS = ['無', '火', '水', '風', '地', '光', '闇', '天', '理'];
+const SKCAT = [['weapon', '武器'], ['assist', '輔助'], ['special', '奧義'], ['passivea', 'A'], ['passiveb', 'B'], ['passivec', 'C'], ['passivex', 'X'], ['sacredseal', '聖印']];
+const D = window.FEH || {u:[], o:[]};
+const L = D.u;
+L.forEach((u, k) => { const [c, w] = u.wt.split(' '); u.c = COLOR[c] || '無'; u.wk = WKIND[w] || w; u.ord = k; u.ref = u.pr.includes('refresher'); });
+const byI = {}; L.forEach(u => byI[u.i] = u);
+
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const file = (u, suf) => (u.w + ' ' + suf + '.webp').replace(/ /g, '_');
+const imgU = (h, f) => h ? IMG + h[0] + '/' + h + '/' + encodeURIComponent(f) : '';
+const fc = u => u.h[0] ? imgU(u.h[0], file(u, 'Face FC')) : imgU(u.h[1], file(u, 'Face'));
+const face = u => imgU(u.h[1], file(u, 'Face'));
+const btl = u => imgU(u.h[2], file(u, 'BtlFace'));
+let owned = {};   // IntID: [凸 0..10, 神龍之花, 長處 -1..4, 短處 -1..4, 開花資質 -1..4, 祝福 0..8]
+try{ owned = JSON.parse(localStorage.getItem(SAVE_KEY)) || {}; }catch(e){ owned = {}; }
+function saveOwned(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(owned)); }catch(e){ alert('儲存失敗：' + e.message); } }
+const F = {c:new Set(), w:new Set(), m:new Set(), p:new Set()};
+
+/* ===== 能力值（Lv40・5★） ===== */
+function order(u){ return [0, 1, 2, 3, 4].sort((a, b) => u.st[b] - u.st[a] || a - b); }
+function calc(u, v){
+  v = v || [0, 0, -1, -1, -1, 0];
+  const [m, df, a, f, x] = v, b = u.st.slice(), g = u.gr.slice();
+  if (a >= 0){ b[a] += 1; g[a] += 5; }
+  const flawOn = f >= 0 && f !== a && m < 1 && x !== f;
+  if (flawOn){ b[f] -= 1; g[f] -= 5; }
+  if (x >= 0 && x !== a && x !== f){ b[x] += 1; g[x] += 5; }
+  const s = b.map((n, k) => n + Math.floor(0.39 * Math.floor(g[k] * 1.14)));
+  const o = order(u), pairs = [[0, 1], [2, 3], [4, 0], [1, 2], [3, 4]];
+  if (m >= 1 && a < 0) [0, 1, 2].forEach(k => s[o[k]] += 1);
+  for (let k = 0; k < m; k++) pairs[k % 5].forEach(j => s[o[j]] += 1);
+  for (let k = 0; k < df; k++) s[o[k % 5]] += 1;
+  return s;
+}
+const bst = (u, v) => calc(u, v).reduce((p, n) => p + n, 0);
+
+function buildChips(){
+  document.getElementById('chipC').innerHTML = Object.values(COLOR).map(c => `<span class="chip${F.c.has(c) ? ' on' : ''}" data-k="c" data-v="${c}"><span class="wc c-${c}" style="position:static">${c}</span></span>`).join('') +
+    Object.values(WKIND).map(w => `<span class="chip${F.w.has(w) ? ' on' : ''}" data-k="w" data-v="${w}">${w}</span>`).join('') +
+    Object.entries(MV).map(([k, m]) => `<span class="chip${F.m.has(k) ? ' on' : ''}" data-k="m" data-v="${k}">${m}</span>`).join('');
+  document.getElementById('chipP').innerHTML = PR_CHIP.map(p => `<span class="chip${F.p.has(p) ? ' on' : ''}" data-k="p" data-v="${p}"><span class="pr pr-${p}">${PR[p]}</span></span>`).join('');
+}
+function filtered(){
+  const q = document.getElementById('q').value.trim().toLowerCase(), fo = document.getElementById('fOwn').value, so = document.getElementById('fSort').value;
+  const out = L.filter(u => {
+    if (F.c.size && !F.c.has(u.c)) return false;
+    if (F.w.size && !F.w.has(u.wk)) return false;
+    if (F.m.size && !F.m.has(u.mv)) return false;
+    if (F.p.size && ![...F.p].every(p => u.pr.includes(p))) return false;
+    if (q && ![u.n, u.t, u.en].some(s => s.toLowerCase().includes(q))) return false;
+    const v = owned[u.i];
+    if (fo === 'own' && !v) return false;
+    if (fo === 'not' && v) return false;
+    if (fo === 'm10' && !(v && v[0] >= 10)) return false;
+    if (fo === 'notm10' && !(v && v[0] < 10)) return false;
+    return true;
+  });
+  if (so === 'old') out.sort((a, b) => b.ord - a.ord);
+  else if (so === 'bst') out.sort((a, b) => bst(b, owned[b.i]) - bst(a, owned[a.i]) || a.ord - b.ord);
+  else if (so === 'mg') out.sort((a, b) => (owned[b.i] ? owned[b.i][0] : -1) - (owned[a.i] ? owned[a.i][0] : -1) || a.ord - b.ord);
+  else if (so === 'name') out.sort((a, b) => a.n.localeCompare(b.n, 'zh-Hant') || a.ord - b.ord);
+  else out.sort((a, b) => a.ord - b.ord);
+  return out;
+}
+const opts = (n, cur, fmt) => Array.from({length:n + 1}, (_, k) => `<option value="${k}"${cur === k ? ' selected' : ''}>${fmt(k)}</option>`).join('');
+function cardHTML(u){
+  const v = owned[u.i];
+  return `<div class="item${v ? ' own' : ''}${v && v[0] >= 10 ? ' np5' : ''}" data-i="${u.i}">
+    <div class="img"><img loading="lazy" src="${fc(u)}" data-big="${face(u)}" alt="">
+      <span class="mv">${MV[u.mv]}</span><span class="rar">${u.rd.slice(0, 4)}</span><span class="wc c-${u.c}">${u.c}${u.wk}</span><span class="chk">✓</span></div>
+    <div class="nm">${esc(u.n)}</div>
+    <div class="cs" title="${esc(u.t)}｜${esc(u.en)}">${esc(u.t)}</div>
+    <div class="np">${v ? `<select data-m title="凸數">${opts(10, v[0], k => '+' + k)}</select><select data-d title="神龍之花">${opts(25, v[1], k => '花' + k)}</select>` : '<span style="visibility:hidden">-</span>'}</div></div>`;
+}
+function render(){
+  const out = filtered(), g = document.getElementById('grid');
+  g.innerHTML = out.length ? out.map(cardHTML).join('') : '<div class="msg">沒有符合的項目</div>';
+  renderStats(out.length);
+}
+function renderStats(shown){
+  const own = L.filter(u => owned[u.i]);
+  let h = `<span>持有 <b>${own.length}</b> / ${L.length}</span>` + Object.values(COLOR).map(c => `<span>${c} <b>${own.filter(u => u.c === c).length}</b>/${L.filter(u => u.c === c).length}</span>`).join('');
+  h += `<span>+10 <b>${own.filter(u => owned[u.i][0] >= 10).length}</b></span><span>顯示中 ${shown}</span>`;
+  document.getElementById('stats').innerHTML = h;
+}
+function setOwn(i, v){
+  if (v) owned[i] = v; else delete owned[i];
+  saveOwned();
+  const el = document.querySelector(`#grid .item[data-i="${i}"]`);
+  if (el){ const t = document.createElement('div'); t.innerHTML = cardHTML(byI[i]); el.replaceWith(t.firstElementChild); }
+  renderStats(document.querySelectorAll('#grid .item').length);
+}
+const NEW = () => [0, 0, -1, -1, -1, 0];
+const grid = document.getElementById('grid');
+grid.addEventListener('click', ev => {
+  const el = ev.target.closest('.item'); if (!el) return;
+  const i = +el.dataset.i;
+  if (ev.target.closest('select')) return;
+  if (ev.target.closest('.chk')){ setOwn(i, owned[i] ? 0 : NEW()); return; }
+  pushedHash = true; location.hash = 'h-' + i;
+});
+grid.addEventListener('change', ev => {
+  const el = ev.target.closest('.item'); if (!el) return;
+  const i = +el.dataset.i, v = owned[i].slice();
+  if (ev.target.matches('[data-m]')) v[0] = +ev.target.value;
+  if (ev.target.matches('[data-d]')) v[1] = +ev.target.value;
+  setOwn(i, v);
+});
+
+/* ===== 詳細 ===== */
+let curDetail = null, pushedHash = false, skLoad = null;
+function loadSkills(){
+  if (window.FEH_SK) return Promise.resolve();
+  return skLoad || (skLoad = new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'data/skills.js'; s.onload = res; s.onerror = () => { skLoad = null; rej(new Error('data/skills.js 讀取失敗')); }; document.head.appendChild(s); }));
+}
+const statSel = (id, cur, none) => `<select id="${id}"><option value="-1">${none}</option>${STAT.map((s, k) => `<option value="${k}"${cur === k ? ' selected' : ''}>${s}</option>`).join('')}</select>`;
+function ownBar(u){
+  const v = owned[u.i];
+  let h = `<label style="font-weight:600;cursor:pointer"><input type="checkbox" id="downChk" ${v ? 'checked' : ''}> 持有</label>`;
+  if (v) h += `<label>凸 <select id="dM">${opts(10, v[0], k => '+' + k)}</select></label><label>神龍之花 <select id="dD">${opts(25, v[1], k => k)}</select></label>
+    <label>長處 ${statSel('dA', v[2], '無')}</label><label>短處 ${statSel('dF', v[3], '無')}</label><label>開花資質 ${statSel('dX', v[4], '無')}</label>
+    <label>祝福 <select id="dB">${BLESS.map((b, k) => `<option value="${k}"${v[5] === k ? ' selected' : ''}>${b}</option>`).join('')}</select></label>`;
+  return h;
+}
+function skillHTML(u){
+  const S = window.FEH_SK;
+  if (!S) return '<h3>技能</h3><p style="color:var(--sub)">讀取技能資料中…</p>';
+  const byCat = {};
+  u.sk.forEach(([k, ur, dr]) => { const s = S[k]; if (s) (byCat[s.c] = byCat[s.c] || []).push({k, s, ur, dr}); });
+  let h = '<h3>技能（5★ 可習得；藍字＝該欄最高階）<small style="font-weight:400;color:var(--sub);font-size:12px">　效果為英文原文</small></h3>';
+  for (const [c, lab] of SKCAT){
+    const arr = byCat[c]; if (!arr) continue;
+    arr.forEach((x, k) => {
+      const s = x.s, fin = k === arr.length - 1;
+      const meta = [s.mt ? '威力 ' + s.mt : '', s.rg ? '射程 ' + s.rg : '', s.cd ? (s.c === 'weapon' ? '奧義 ' + (s.cd < 0 ? '加速 ' + (-s.cd) : '減速 ' + s.cd) : 'CD ' + s.cd) : '', s.sp ? 'SP ' + s.sp : '', x.dr ? x.dr + '★ 初始' : x.ur ? x.ur + '★ 習得' : '', s.ex ? '專屬' : ''].filter(Boolean).join('・');
+      h += `<div class="sk${fin ? ' fin' : ''}"><div style="flex:1"><div class="t"><span class="skc">${lab}</span>${esc(s.n)}<small class="en">${esc(s.en)}</small><small>${meta}</small></div><div class="d">${esc(s.d)}</div>`;
+      if (s.rf && fin){
+        const st = Object.entries(s.rf.s).map(([p, m]) => p.toUpperCase() + ' ' + m.split(',').map((n, j) => +n ? STAT[j] + '+' + n : '').filter(Boolean).join(' ')).join('／');
+        h += `<div class="rf"><b>武器鍊成</b>　${esc(st)}${s.rf.d ? '\n' + esc(s.rf.d) : ''}${s.rf.e.map(e => `\n<b>特殊鍊成（${esc(e.p)}）</b>　${esc(e.s.split(',').map((n, j) => +n ? STAT[j] + '+' + n : '').filter(Boolean).join(' '))}\n${esc(e.d)}`).join('')}</div>`;
+      }
+      h += '</div></div>';
+    });
+  }
+  return h;
+}
+function detailHTML(u){
+  const v = owned[u.i], lv1 = u.st, s0 = calc(u), s1 = calc(u, v), art = curDetail.art || 0;
+  const tot = a => a.reduce((p, n) => p + n, 0);
+  let h = `<div class="dhead"><img src="${fc(u)}" alt=""><div><div class="ruby">${esc(u.en)}</div><h2>${esc(u.t)}　${esc(u.n)}</h2>
+    <div class="meta"><span class="wc c-${u.c}" style="position:static">${u.c}${u.wk}</span>｜${MV[u.mv]}｜${u.o.map(k => esc(D.o[k])).join('・')}｜實裝 ${u.rd}</div>
+    <div>${u.pr.map(p => `<span class="pr pr-${p}">${PR[p]}</span>`).join('')}</div></div></div>
+    <div class="down" id="down">${ownBar(u)}</div>
+    <div class="dcols"><div class="dart"><img id="dimg" src="${art ? btl(u) : face(u)}" alt="">
+      <div class="asc"><span data-art="0" class="${art ? '' : 'on'}">一般</span><span data-art="1" class="${art ? 'on' : ''}">戰鬥</span></div></div><div>
+      <h3>能力值（5★）</h3>
+      <table class="kv st"><tr><th></th>${STAT.map(s => `<th>${s}</th>`).join('')}<th>總和</th></tr>
+        <tr><th>Lv1</th>${lv1.map(n => `<td>${n}</td>`).join('')}<td>${tot(lv1)}</td></tr>
+        <tr><th>成長率</th>${u.gr.map(n => `<td>${n}%</td>`).join('')}<td></td></tr>
+        <tr><th>Lv40 無凸</th>${s0.map(n => `<td>${n}</td>`).join('')}<td>${tot(s0)}</td></tr>
+        ${v ? `<tr><th>Lv40 目前</th>${s1.map((n, k) => `<td class="${n > s0[k] ? 'up' : n < s0[k] ? 'dn' : ''}">${n}</td>`).join('')}<td><b>${tot(s1)}</b></td></tr>` : ''}</table>
+      <div style="font-size:12px;color:var(--sub);margin-top:4px">不含武器與技能加成。${v ? `目前＝+${v[0]}・神龍之花 ${v[1]}${v[2] >= 0 ? '・長處 ' + STAT[v[2]] : ''}${v[3] >= 0 ? '・短處 ' + STAT[v[3]] + (v[0] >= 1 ? '（凸後抵銷）' : '') : ''}${v[4] >= 0 ? '・開花資質 ' + STAT[v[4]] : ''}${v[5] ? '・祝福 ' + BLESS[v[5]] : ''}` : ''}</div>
+      <h3>資料</h3><table class="kv"><tr><th>繪師</th><td>${esc(u.ar)}</td></tr><tr><th>聲優</th><td>${esc([].concat(u.vj || []).join('、'))}${u.ve && u.ve.length ? '（EN ' + esc([].concat(u.ve).join('、')) + '）' : ''}</td></tr></table>
+      ${u.ds ? `<div class="prof">${esc(u.ds)}</div>` : ''}
+    </div></div>${skillHTML(u)}
+    <div class="dfoot">資料來源：<a href="${WIKI + encodeURIComponent(u.en.replace(/ /g, '_'))}" target="_blank" rel="noopener">Fire Emblem Heroes Wiki・${esc(u.en)}</a></div>`;
+  return h;
+}
+function openDetail(i){
+  const u = byI[i];
+  if (!u){ closeDetail(); return; }
+  curDetail = {i};
+  document.getElementById('dlg').classList.add('on');
+  document.body.classList.add('lock');
+  document.getElementById('dlg').scrollTop = 0;
+  paint();
+  if (!window.FEH_SK) loadSkills().then(() => { if (curDetail && curDetail.i === i) paint(); }).catch(err => alert(err.message));
+}
+function paint(){
+  const y = document.getElementById('dlg').scrollTop;
+  document.getElementById('dbody').innerHTML = detailHTML(byI[curDetail.i]);
+  document.getElementById('dlg').scrollTop = y;
+}
+function closeDetail(){ curDetail = null; document.getElementById('dlg').classList.remove('on'); document.body.classList.remove('lock'); }
+function hideDetail(){
+  if (pushedHash){ pushedHash = false; history.back(); }
+  else { history.replaceState(null, '', location.pathname + location.search); closeDetail(); }
+}
+function routeHash(){ const m = location.hash.match(/^#h-(\d+)$/); if (m) openDetail(+m[1]); else closeDetail(); }
+window.addEventListener('hashchange', routeHash);
+document.querySelector('.dclose').addEventListener('click', hideDetail);
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && curDetail) hideDetail(); });
+document.getElementById('dlg').addEventListener('click', ev => {
+  if (ev.target.id === 'dlg'){ hideDetail(); return; }
+  const a = ev.target.closest('[data-art]');
+  if (a && curDetail){ curDetail.art = +a.dataset.art; paint(); }
+});
+document.getElementById('dlg').addEventListener('change', ev => {
+  if (!curDetail) return;
+  const i = curDetail.i, id = ev.target.id;
+  if (id === 'downChk'){ setOwn(i, ev.target.checked ? NEW() : 0); paint(); return; }
+  const k = {dM:0, dD:1, dA:2, dF:3, dX:4, dB:5}[id];
+  if (k === undefined || !owned[i]) return;
+  const v = owned[i].slice(); v[k] = +ev.target.value; setOwn(i, v); paint();
+});
+
+/* ===== 分頁、篩選、匯出入 ===== */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  const isTeam = t.dataset.tab === 'team';
+  document.getElementById('listCtl').hidden = isTeam;
+  document.getElementById('grid').hidden = isTeam;
+  document.getElementById('teamCtl').hidden = !isTeam;
+  document.getElementById('teamOut').hidden = !isTeam;
+  window.scrollTo(0, 0);
+  if (isTeam) TEAM.render(); else render();
+}));
+document.querySelectorAll('#listCtl .chips').forEach(box => box.addEventListener('click', ev => {
+  const c = ev.target.closest('.chip'); if (!c) return;
+  const k = c.dataset.k, v = c.dataset.v;
+  F[k].has(v) ? F[k].delete(v) : F[k].add(v);
+  c.classList.toggle('on'); render();
+}));
+let qTimer;
+document.getElementById('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(render, 150); });
+['fOwn', 'fSort'].forEach(id => document.getElementById(id).addEventListener('change', render));
+document.getElementById('btnExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({game:'feh', version:1, exported:new Date().toISOString(), m:owned}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'feh_owned_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+document.getElementById('btnImport').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try{
+    const o = JSON.parse(await f.text());
+    if (!o.m || o.game !== 'feh') throw new Error('格式不符');
+    if (!confirm(`匯入 ${Object.keys(o.m).length} 位英雄，會覆蓋目前紀錄，確定？`)) return;
+    owned = o.m; saveOwned(); render();
+  }catch(err){ alert('匯入失敗：' + err.message); }
+  ev.target.value = '';
+});
+</script>
+<script src="team.js"></script>
+<script>
+TEAM.init();
+document.getElementById('snap').textContent = D.d || '';
+if (!L.length) document.getElementById('grid').innerHTML = '<div class="msg">資料讀取失敗（data/list.js）。</div>';
+else { buildChips(); render(); routeHash(); if (location.hash === '#team') document.querySelector('.tab[data-tab="team"]').click(); }
+</script>
+<script src="../hover.js"></script>
+</body>
+</html>
